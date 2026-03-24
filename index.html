@@ -241,7 +241,10 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,60,.1);}
       </div>
     </div>
 
-    <button class="btn" onclick="startTraining()">BEGIN TRAINING →</button>
+    <button class="btn" onclick="startTraining()" style="font-size:14px;padding:16px;letter-spacing:1.5px;line-height:1.8;">
+      BEGIN TRAINING &nbsp;·&nbsp; COMENZAR &nbsp;·&nbsp; KÒMANSE &nbsp;→
+    </button>
+
   </div>
 </div>
 
@@ -435,6 +438,9 @@ function selectLang(lang) {
   ['en','es','ht'].forEach(l => document.getElementById('lang-'+l).classList.remove('sel'));
   document.getElementById('lang-'+lang).classList.add('sel');
   applyLangToSignin();
+  // Auto-start if name is already typed
+  const typed = document.getElementById('name-input').value.trim();
+  if (typed.split(/\s+/).length >= 2) startTraining();
 }
 
 function applyLangToSignin() {
