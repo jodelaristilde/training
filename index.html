@@ -224,7 +224,7 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,60,.1);}
 
     <label id="s1-label">Your Full Name</label>
     <div class="autocomplete-wrap">
-      <input type="text" id="name-input" placeholder="Type your full name..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <input type="text" id="name-input" placeholder="First name and last name..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       <div class="dropdown" id="name-dropdown"></div>
     </div>
 
@@ -335,7 +335,10 @@ const T = {
     nextLabel:'Next Employee',
     hdrBadge:'EN', statusDone:'Completed', statusPartial:'In Progress', statusNone:'Not Started',
     savedMsg:'Progress saved! You can continue later by signing in with the same name.',
-    nameNotFound:'Name not found on the employee list. Check your spelling or contact your manager.'
+    nameNotFound:'Your name is not on the employee list. See your manager.',
+    needFullName:'Please enter your first AND last name (e.g. Maria Gonzalez).',
+    alreadyDoneTitle:'TRAINING ALREADY COMPLETED',
+    alreadyDoneMsg:'has already completed this training. No further action needed.'
   },
   es: {
     s1Title:'Inicio de Sesión', s1Sub:'Escriba su nombre completo tal como se lo dieron a su gerente. Su nombre debe estar en la lista de empleados.',
@@ -353,7 +356,10 @@ const T = {
     nextLabel:'Próximo Empleado',
     hdrBadge:'ES', statusDone:'Completado', statusPartial:'En Progreso', statusNone:'No Iniciado',
     savedMsg:'¡Progreso guardado! Puede continuar más tarde ingresando con el mismo nombre.',
-    nameNotFound:'Nombre no encontrado en la lista. Verifique la ortografía o contacte a su gerente.'
+    nameNotFound:'Su nombre no está en la lista de empleados. Consulte a su gerente.',
+    needFullName:'Por favor ingrese su nombre Y apellido (ej. Maria Gonzalez).',
+    alreadyDoneTitle:'CAPACITACIÓN YA COMPLETADA',
+    alreadyDoneMsg:'ya completó esta capacitación. No se requiere ninguna acción adicional.'
   },
   ht: {
     s1Title:'Koneksyon Anplwaye', s1Sub:'Ekri non konplè ou jan manadjè ou ba ou li a. Non ou dwe nan lis anplwaye yo.',
@@ -371,7 +377,10 @@ const T = {
     nextLabel:'Anplwaye Pwochen',
     hdrBadge:'HT', statusDone:'Konplete', statusPartial:'An Pwogrè', statusNone:'Pa Kòmanse',
     savedMsg:'Pwogrè sove! Ou ka kontinye pita lè ou konekte avèk menm non an.',
-    nameNotFound:'Non pa jwenn nan lis la. Verifye òtograf la oswa kontakte manadjè ou.'
+    nameNotFound:'Non ou pa nan lis anplwaye yo. Wè manadjè ou.',
+    needFullName:'Tanpri antre prenon W AK non fanmi W (egzanp: Maria Gonzalez).',
+    alreadyDoneTitle:'FÒMASYON DEJA KONPLETE',
+    alreadyDoneMsg:'deja konplete fòmasyon sa a. Pa gen okenn aksyon siplemantè ki nesesè.'
   }
 };
 
@@ -439,17 +448,34 @@ function applyLangToSignin() {
 // ── Start training ──
 async function startTraining() {
   const typed = document.getElementById('name-input').value.trim();
+
   if (!typed) {
     shakeInput('name-input');
+    return;
+  }
+
+  // Must have at least two words (first name + last name)
+  const parts = typed.trim().split(/\s+/);
+  if (parts.length < 2) {
+    shakeInput('name-input');
+    showNameError(T[selectedLang].needFullName || 'Please enter your first AND last name (e.g. Maria Gonzalez).');
     return;
   }
 
   // Case-insensitive match against employee list
   const emp = employees.find(e => e.name.toLowerCase() === typed.toLowerCase());
 
+  // ── Block 1: Not on the list ──
   if (!emp) {
     shakeInput('name-input');
-    showNameError(T[selectedLang].nameNotFound || 'Name not found. Please check your spelling or contact your manager.');
+    showNameError(T[selectedLang].nameNotFound || 'Your name is not on the employee list. See your manager.');
+    return;
+  }
+
+  // ── Block 2: Already completed ──
+  if (emp.completed) {
+    shakeInput('name-input');
+    showAlreadyDone(emp.name, T[selectedLang]);
     return;
   }
 
@@ -493,11 +519,32 @@ function showNameError(msg) {
   err.style.display = 'block';
 }
 
+function showAlreadyDone(name, t) {
+  let box = document.getElementById('already-done-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'already-done-box';
+    box.style.cssText = 'background:#e8f5ee;border:2px solid #1a7a3c;border-radius:10px;padding:20px 22px;margin-bottom:16px;text-align:center;';
+    const wrap = document.getElementById('name-input').closest('.autocomplete-wrap');
+    wrap.parentNode.insertBefore(box, wrap.nextSibling);
+  }
+  box.innerHTML = `
+    <div style="font-size:32px;margin-bottom:8px;">✅</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#1a7a3c;margin-bottom:6px;">${t.alreadyDoneTitle || 'TRAINING ALREADY COMPLETED'}</div>
+    <div style="font-size:13px;color:#4a6a54;line-height:1.5;">${name} ${t.alreadyDoneMsg || 'has already completed this training. No further action is needed.'}</div>
+  `;
+  box.style.display = 'block';
+  // Hide the regular error if showing
+  const errBox = document.getElementById('name-error');
+  if (errBox) errBox.style.display = 'none';
+}
+
 function hideNameError() {
   const err = document.getElementById('name-error');
   if (err) err.style.display = 'none';
+  const done = document.getElementById('already-done-box');
+  if (done) done.style.display = 'none';
 }
-
 
 function applyLangToVideo() {
   const t = T[selectedLang];
