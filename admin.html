@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Fair — Admin · Training Management</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root {
+  --green:#1a7a3c; --green-light:#e8f5ee; --green-mid:#c6e8d2; --green-dark:#145f2e;
+  --bg:#f2f7f4; --card:#ffffff; --card2:#f8faf9;
+  --border:#d0e4d8; --border2:#b8d4c2;
+  --text:#1a2e22; --muted:#6a8a74; --muted2:#4a6a54;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+header{width:100%;background:var(--green);border-bottom:1px solid var(--green-dark);padding:0 28px;display:flex;align-items:center;height:56px;gap:14px;}
+.hdr-logo{background:white;color:var(--green);font-family:'Bebas Neue',sans-serif;font-size:20px;padding:3px 10px;border-radius:3px;letter-spacing:1px;}
+header h1{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:3px;color:rgba(255,255,255,.9);}
+.hdr-tag{background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:3px 12px;border-radius:100px;}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.logout-btn{background:transparent;border:1px solid rgba(255,255,255,.4);color:rgba(255,255,255,.8);padding:6px 14px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;}
+.logout-btn:hover{border-color:white;color:white;}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--bg);}
+.login-box{background:white;border:1px solid var(--border);border-radius:14px;padding:44px 40px;width:100%;max-width:400px;text-align:center;box-shadow:0 4px 20px rgba(26,122,60,.1);}
+.login-box .lock{font-size:44px;margin-bottom:16px;}
+.login-box h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--text);margin-bottom:6px;}
+.login-box p{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.login-box input{width:100%;background:#f8faf9;border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;border-radius:9px;margin-bottom:16px;outline:none;transition:border-color .2s;text-align:center;letter-spacing:4px;}
+.login-box input:focus{border-color:var(--green);}
+.login-err{color:#c0392b;font-size:13px;margin-bottom:14px;display:none;}
+
+/* MAIN LAYOUT */
+#admin-app{display:none;padding:28px;}
+.page-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1200px;margin:0 auto;}
+@media(max-width:900px){.page-grid{grid-template-columns:1fr;}}
+
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(26,122,60,.06);}
+.panel-head{background:var(--green-light);padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.panel-head h3{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--green-dark);}
+.panel-head .count-badge{background:var(--green);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;}
+.panel-body{padding:20px 22px;}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:1200px;margin:0 auto 20px;}
+.stat-card{background:white;border:1px solid var(--border);border-radius:10px;padding:18px 20px;text-align:center;box-shadow:0 2px 8px rgba(26,122,60,.05);}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:2px;line-height:1;}
+.stat-num.red{color:var(--green);}
+.stat-num.gold{color:#d4820a;}
+.stat-num.green{color:var(--green);}
+.stat-label{font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.5px;}
+.btn-red{background:var(--green);color:white;}
+.btn-red:hover{background:var(--green-dark);}
+.btn-green{background:var(--green);color:white;}
+.btn-green:hover{background:var(--green-dark);}
+.btn-gold{background:#d4820a;color:white;}
+.btn-gold:hover{background:#b56d08;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{background:var(--green-light);color:var(--green-dark);border-color:var(--green-mid);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* FORMS */
+input[type="text"],input[type="password"],select{background:#f8faf9;border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;border-radius:8px;outline:none;transition:border-color .2s;}
+input[type="text"]:focus,select:focus{border-color:var(--green);}
+select option{background:white;}
+
+/* ADD EMPLOYEE */
+.add-row{display:flex;gap:10px;margin-bottom:16px;}
+.add-row input{flex:1;}
+
+/* EMPLOYEE LIST */
+.emp-list{max-height:420px;overflow-y:auto;}
+.emp-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.emp-item:last-child{border-bottom:none;}
+.emp-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;color:white;font-size:11px;font-weight:700;}
+.emp-check.checked{background:var(--green);border-color:var(--green);}
+.emp-check.completed{background:transparent;border-color:var(--green);cursor:default;}
+.emp-info{flex:1;}
+.emp-name{font-size:14px;color:var(--text);font-weight:500;}
+.emp-status{font-size:11px;color:var(--muted);margin-top:2px;}
+.emp-status.done{color:var(--green);}
+.emp-status.partial{color:#d4820a;}
+.emp-actions{display:flex;gap:6px;flex-shrink:0;}
+
+/* PROGRESS PILLS */
+.cp-pills{display:flex;gap:4px;margin-top:4px;}
+.cp-pip{width:10px;height:10px;border-radius:50%;background:var(--border);}
+.cp-pip.done{background:var(--green);}
+
+/* GROUP CHECK-OFF */
+.group-section{margin-top:0;}
+.group-notice{background:var(--green-light);border:1.5px solid var(--green-mid);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--green-dark);margin-bottom:16px;line-height:1.5;}
+.selected-count{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);letter-spacing:2px;display:inline;}
+.group-action-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+/* SEARCH */
+.search-row{display:flex;gap:10px;margin-bottom:14px;align-items:center;}
+.search-row input{flex:1;}
+.filter-btns{display:flex;gap:6px;}
+.filter-btn{padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s;}
+.filter-btn.active{background:var(--green);border-color:var(--green);color:white;}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;background:white;border:1px solid var(--border);border-radius:10px;padding:14px 20px;font-size:13px;color:var(--text);z-index:1000;transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,.1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:var(--green);color:var(--green-dark);}
+.toast.error{border-color:#e74c3c;color:#c0392b;}
+
+.divider{height:1px;background:var(--border);margin:18px 0;}
+.empty-state{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="lock">🔐</div>
+    <h2>Admin Access</h2>
+    <p>Food Fair Training Management</p>
+    <input type="password" id="admin-pass" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()">
+    <div class="login-err" id="login-err">Incorrect password. Try again.</div>
+    <button class="btn btn-green" style="width:100%;padding:13px;font-size:15px;letter-spacing:2px;font-family:'Bebas Neue',sans-serif;" onclick="adminLogin()">LOG IN →</button>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="admin-app">
+  <header>
+    <div class="hdr-logo">FF</div>
+    <h1>Training Management</h1>
+    <span class="hdr-tag">Admin</span>
+    <div class="hdr-right">
+      <button class="logout-btn" onclick="adminLogout()">Log Out</button>
+    </div>
+  </header>
+
+  <div style="padding:24px;">
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num red" id="stat-total">0</div>
+        <div class="stat-label">Total Employees</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num gold" id="stat-partial">0</div>
+        <div class="stat-label">In Progress</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num green" id="stat-done">0</div>
+        <div class="stat-label">Completed</div>
+      </div>
+    </div>
+
+    <div class="page-grid">
+
+      <!-- LEFT: Employee List Management -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Employee List</h3>
+          <span class="count-badge" id="emp-count-badge">0</span>
+        </div>
+        <div class="panel-body">
+          <!-- Add employee manually -->
+          <div class="add-row">
+            <input type="text" id="new-emp-name" placeholder="Full name (e.g. Maria Gonzalez)" onkeydown="if(event.key==='Enter')addEmployee()">
+            <button class="btn btn-green" onclick="addEmployee()">+ Add</button>
+          </div>
+
+          <!-- Excel import -->
+          <div style="background:var(--green-light);border:1.5px dashed var(--green-mid);border-radius:10px;padding:16px 18px;margin-bottom:16px;">
+            <div style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--green-dark);margin-bottom:8px;">📊 Import from Excel / CSV</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Upload an Excel (.xlsx) or CSV file. Names must be in the <strong>first column</strong>. First row can be a header — it will be skipped automatically.</div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <label style="cursor:pointer;">
+                <input type="file" id="excel-file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importFromFile(this)">
+                <span class="btn btn-green btn-sm" onclick="document.getElementById('excel-file').click()">📂 Choose File</span>
+              </label>
+              <span id="import-status" style="font-size:12px;color:var(--muted);"></span>
+            </div>
+            <div id="import-preview" style="display:none;margin-top:12px;">
+              <div style="font-size:12px;color:var(--muted2);margin-bottom:8px;" id="import-preview-label"></div>
+              <div id="import-preview-list" style="max-height:120px;overflow-y:auto;background:white;border:1px solid var(--border);border-radius:7px;padding:8px;"></div>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <button class="btn btn-green btn-sm" onclick="confirmImport()">✓ Import All</button>
+                <button class="btn btn-ghost btn-sm" onclick="cancelImport()">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search & filter -->
+          <div class="search-row">
+            <input type="text" id="emp-search" placeholder="Search..." oninput="renderEmployeeList()">
+            <div class="filter-btns">
+              <button class="filter-btn active" id="f-all" onclick="setFilter('all')">All</button>
+              <button class="filter-btn" id="f-pending" onclick="setFilter('pending')">Pending</button>
+              <button class="filter-btn" id="f-done" onclick="setFilter('done')">Done</button>
+            </div>
+          </div>
+
+          <div class="emp-list" id="emp-list">
+            <div class="empty-state">Loading employees...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Group Check-Off -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Group Check-Off</h3>
+          <span class="count-badge" id="group-count-badge">0 selected</span>
+        </div>
+        <div class="panel-body">
+          <div class="group-notice">
+            ✅ Use this panel when employees watch the video <strong>together as a group</strong>. Select everyone who watched, then mark them all as complete at once.
+          </div>
+
+          <!-- Select all / deselect -->
+          <div class="group-action-row" style="margin-bottom:14px;">
+            <button class="btn btn-ghost btn-sm" onclick="selectAllPending()">Select All Pending</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearGroupSelection()">Clear Selection</button>
+          </div>
+
+          <!-- Pending employees for group selection -->
+          <div class="emp-list" id="group-list" style="max-height:320px;">
+            <div class="empty-state">No pending employees</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="margin-bottom:14px;">
+            <div style="font-size:13px;color:var(--muted2);margin-bottom:6px;">Selected for group completion:</div>
+            <div style="font-size:14px;color:white;"><span class="selected-count" id="group-selected-count">0</span> <span style="color:var(--muted);font-size:14px;">employees</span></div>
+          </div>
+
+          <button class="btn btn-green" style="width:100%;padding:13px;font-size:15px;letter-spacing:1px;font-family:'Bebas Neue',sans-serif;" onclick="markGroupComplete()" id="group-complete-btn" disabled>
+            ✓ MARK GROUP AS COMPLETED
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ══════════════════════════════════════════════════
+// FIREBASE CONFIG — must match employee.html
+// ══════════════════════════════════════════════════
+const FB_URL = 'https://foodfair-meat-default-rtdb.firebaseio.com';
+const ADMIN_PASSWORD = 'FoodFair2024'; // Change this to your password
+
+const TOTAL_CHECKPOINTS = 4;
+let employees = {};
+let empFilter = 'all';
+let groupSelected = new Set();
+let pollInterval = null;
+let importNames = []; // holds names parsed from Excel/CSV
+
+// ── Auth ──
+function adminLogin() {
+  const pass = document.getElementById('admin-pass').value;
+  if (pass === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-app').style.display = 'block';
+    loadAndRender();
+    pollInterval = setInterval(loadAndRender, 8000); // auto-refresh every 8s
+  } else {
+    const err = document.getElementById('login-err');
+    err.style.display = 'block';
+    document.getElementById('admin-pass').value = '';
+    setTimeout(() => err.style.display = 'none', 3000);
+  }
+}
+
+function adminLogout() {
+  clearInterval(pollInterval);
+  document.getElementById('admin-pass').value = '';
+  document.getElementById('admin-app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// ── Firebase ──
+async function fbGet(path) {
+  try { const r = await fetch(FB_URL + path + '.json'); return await r.json(); }
+  catch(e) { return null; }
+}
+async function fbSet(path, data) {
+  try { await fetch(FB_URL + path + '.json', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); }
+  catch(e) {}
+}
+async function fbPatch(path, data) {
+  try { await fetch(FB_URL + path + '.json', { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); }
+  catch(e) {}
+}
+async function fbDelete(path) {
+  try { await fetch(FB_URL + path + '.json', { method:'DELETE' }); }
+  catch(e) {}
+}
+
+// ── Load ──
+async function loadAndRender() {
+  const data = await fbGet('/employees');
+  employees = data || {};
+  renderStats();
+  renderEmployeeList();
+  renderGroupList();
+}
+
+// ── Stats ──
+function renderStats() {
+  const all = Object.values(employees);
+  const done = all.filter(e => e.completed).length;
+  const partial = all.filter(e => !e.completed && (e.checkpoints || 0) > 0).length;
+  document.getElementById('stat-total').textContent = all.length;
+  document.getElementById('stat-partial').textContent = partial;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('emp-count-badge').textContent = all.length;
+}
+
+// ── Employee List ──
+function setFilter(f) {
+  empFilter = f;
+  ['all','pending','done'].forEach(x => {
+    document.getElementById('f-'+x).classList.toggle('active', x === f);
+  });
+  renderEmployeeList();
+}
+
+function renderEmployeeList() {
+  const search = (document.getElementById('emp-search').value || '').toLowerCase();
+  let list = Object.entries(employees);
+
+  if (empFilter === 'pending') list = list.filter(([,e]) => !e.completed);
+  if (empFilter === 'done') list = list.filter(([,e]) => e.completed);
+  if (search) list = list.filter(([,e]) => e.name.toLowerCase().includes(search));
+
+  list.sort((a,b) => a[1].name.localeCompare(b[1].name));
+
+  const container = document.getElementById('emp-list');
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-state">No employees found</div>';
+    return;
+  }
+
+  container.innerHTML = list.map(([id, emp]) => {
+    const cp = emp.checkpoints || 0;
+    const done = emp.completed;
+    const statusClass = done ? 'done' : cp > 0 ? 'partial' : '';
+    const statusText = done ? '✓ Training complete' : cp > 0 ? `In progress — ${cp}/${TOTAL_CHECKPOINTS} checkpoints` : 'Not started';
+    const pips = Array.from({length:TOTAL_CHECKPOINTS}, (_,i) =>
+      `<div class="cp-pip${i < cp ? ' done' : ''}"></div>`).join('');
+
+    return `<div class="emp-item" id="emp-item-${id}">
+      <div class="emp-info">
+        <div class="emp-name">${emp.name}</div>
+        <div class="emp-status ${statusClass}">${statusText}</div>
+        <div class="cp-pills">${pips}</div>
+      </div>
+      <div class="emp-actions">
+        ${!done ? `<button class="btn btn-green btn-sm" onclick="markOneDone('${id}')">✓ Mark Done</button>` : '<span style="font-size:11px;color:var(--green);">✓ Done</span>'}
+        <button class="btn btn-ghost btn-sm" onclick="resetEmployee('${id}')" title="Reset progress">↺</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteEmployee('${id}')" style="color:#e74c3c;border-color:#3d1010;" title="Delete">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Group List ──
+function renderGroupList() {
+  const pending = Object.entries(employees).filter(([,e]) => !e.completed);
+  pending.sort((a,b) => a[1].name.localeCompare(b[1].name));
+
+  const container = document.getElementById('group-list');
+  if (!pending.length) {
+    container.innerHTML = '<div class="empty-state">All employees have completed training 🎉</div>';
+    document.getElementById('group-complete-btn').disabled = true;
+    document.getElementById('group-count-badge').textContent = '0 selected';
+    return;
+  }
+
+  container.innerHTML = pending.map(([id, emp]) => {
+    const isSelected = groupSelected.has(id);
+    return `<div class="emp-item">
+      <div class="emp-check ${isSelected ? 'checked' : ''}" id="gcheck-${id}" onclick="toggleGroupSelect('${id}')">
+        ${isSelected ? '✓' : ''}
+      </div>
+      <div class="emp-info">
+        <div class="emp-name">${emp.name}</div>
+        <div class="emp-status ${(emp.checkpoints||0) > 0 ? 'partial' : ''}">${(emp.checkpoints||0) > 0 ? `${emp.checkpoints}/${TOTAL_CHECKPOINTS} checkpoints done` : 'Not started'}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  updateGroupCount();
+}
+
+function toggleGroupSelect(id) {
+  if (groupSelected.has(id)) {
+    groupSelected.delete(id);
+  } else {
+    groupSelected.add(id);
+  }
+  renderGroupList();
+}
+
+function selectAllPending() {
+  Object.entries(employees).forEach(([id, e]) => {
+    if (!e.completed) groupSelected.add(id);
+  });
+  renderGroupList();
+}
+
+function clearGroupSelection() {
+  groupSelected.clear();
+  renderGroupList();
+}
+
+function updateGroupCount() {
+  const count = groupSelected.size;
+  document.getElementById('group-selected-count').textContent = count;
+  document.getElementById('group-count-badge').textContent = count + ' selected';
+  document.getElementById('group-complete-btn').disabled = count === 0;
+}
+
+async function markGroupComplete() {
+  if (!groupSelected.size) return;
+  const names = [];
+  for (const id of groupSelected) {
+    const code = employees[id].code || String(Math.floor(100000 + Math.random() * 900000));
+    await fbPatch('/employees/' + id, {
+      completed: true,
+      checkpoints: TOTAL_CHECKPOINTS,
+      code: code,
+      completedAt: new Date().toISOString()
+    });
+    names.push(employees[id].name);
+  }
+  groupSelected.clear();
+  showToast(`✓ ${names.length} employee${names.length > 1 ? 's' : ''} marked as complete`, 'success');
+  await loadAndRender();
+}
+
+// ── Individual actions ──
+async function markOneDone(id) {
+  const code = employees[id].code || String(Math.floor(100000 + Math.random() * 900000));
+  await fbPatch('/employees/' + id, {
+    completed: true, checkpoints: TOTAL_CHECKPOINTS,
+    code, completedAt: new Date().toISOString()
+  });
+  showToast(`✓ ${employees[id].name} marked as complete`, 'success');
+  await loadAndRender();
+}
+
+async function resetEmployee(id) {
+  if (!confirm(`Reset training progress for ${employees[id].name}?`)) return;
+  await fbPatch('/employees/' + id, { completed: false, checkpoints: 0, code: null, completedAt: null });
+  showToast(`↺ ${employees[id].name} reset`, '');
+  await loadAndRender();
+}
+
+async function deleteEmployee(id) {
+  if (!confirm(`Delete ${employees[id].name} from the list? This cannot be undone.`)) return;
+  await fbDelete('/employees/' + id);
+  showToast(`Deleted ${employees[id].name}`);
+  await loadAndRender();
+}
+
+// ── Add employee ──
+async function addEmployee() {
+  const input = document.getElementById('new-emp-name');
+  const name = input.value.trim();
+  if (!name) { input.focus(); return; }
+
+  // Check for duplicate
+  const exists = Object.values(employees).some(e => e.name.toLowerCase() === name.toLowerCase());
+  if (exists) { showToast('Employee already exists', 'error'); return; }
+
+  const id = 'emp_' + Date.now();
+  await fbSet('/employees/' + id, { name, completed: false, checkpoints: 0 });
+  input.value = '';
+  showToast(`+ ${name} added to list`, 'success');
+  await loadAndRender();
+}
+
+// ── Excel / CSV Import ──
+function importFromFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('import-status');
+  status.textContent = 'Reading file...';
+
+  const reader = new FileReader();
+
+  if (file.name.endsWith('.csv')) {
+    reader.onload = e => {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/).map(l => l.split(',')[0].replace(/["']/g,'').trim()).filter(Boolean);
+      previewImport(lines, file.name);
+    };
+    reader.readAsText(file);
+  } else {
+    reader.onload = e => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+        const names = rows.map(r => String(r[0] || '').trim()).filter(Boolean);
+        previewImport(names, file.name);
+      } catch(err) {
+        document.getElementById('import-status').textContent = '❌ Could not read file. Make sure it is a valid Excel or CSV file.';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+  // Reset file input so same file can be re-selected
+  input.value = '';
+}
+
+function previewImport(names, filename) {
+  // Auto-skip header row if first entry looks like a header (e.g. "Name", "Employee", "Full Name")
+  const headerWords = ['name','employee','full name','nombre','anplwaye','staff'];
+  if (names.length && headerWords.some(w => names[0].toLowerCase().includes(w))) {
+    names = names.slice(1);
+  }
+
+  // Filter out already existing names
+  const existing = Object.values(employees).map(e => e.name.toLowerCase());
+  const newNames = names.filter(n => n && !existing.includes(n.toLowerCase()));
+  const dupes = names.filter(n => n && existing.includes(n.toLowerCase()));
+
+  importNames = newNames;
+
+  const status = document.getElementById('import-status');
+  const preview = document.getElementById('import-preview');
+  const label = document.getElementById('import-preview-label');
+  const list = document.getElementById('import-preview-list');
+
+  if (!newNames.length) {
+    status.textContent = `✓ File read — all ${names.length} names already exist.`;
+    preview.style.display = 'none';
+    return;
+  }
+
+  status.textContent = `Found ${names.length} names in "${filename}"`;
+  label.textContent = `${newNames.length} new names to import${dupes.length ? ` · ${dupes.length} already exist (skipped)` : ''}:`;
+  list.innerHTML = newNames.map(n =>
+    `<div style="padding:4px 6px;font-size:13px;color:var(--text);border-bottom:1px solid var(--border);">${n}</div>`
+  ).join('');
+  preview.style.display = 'block';
+}
+
+async function confirmImport() {
+  if (!importNames.length) return;
+  const btn = document.querySelector('#import-preview .btn-green');
+  btn.textContent = 'Importing...';
+  btn.disabled = true;
+
+  let added = 0;
+  for (const name of importNames) {
+    const id = 'emp_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+    await fbSet('/employees/' + id, { name, completed: false, checkpoints: 0 });
+    added++;
+    await new Promise(r => setTimeout(r, 50)); // small delay to avoid rate limiting
+  }
+
+  cancelImport();
+  showToast(`✓ ${added} employees imported`, 'success');
+  await loadAndRender();
+}
+
+function cancelImport() {
+  importNames = [];
+  document.getElementById('import-preview').style.display = 'none';
+  document.getElementById('import-status').textContent = '';
+}
+
+// ── Toast ──
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast ' + type, 3000);
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('admin-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') adminLogin();
+  });
+  document.getElementById('new-emp-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addEmployee();
+  });
+});
+</script>
+</body>
+</html>

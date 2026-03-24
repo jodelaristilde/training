@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Fair — Employee Training</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root {
+  --green:#1a7a3c; --green-light:#e8f5ee; --green-mid:#c6e8d2; --green-dark:#145f2e;
+  --bg:#f2f7f4; --card:#ffffff; --border:#d0e4d8; --border2:#b8d4c2;
+  --text:#1a2e22; --muted:#6a8a74; --muted2:#4a6a54;
+  --accent:#1a7a3c; --accent-hover:#145f2e;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+
+header{width:100%;background:var(--green);padding:0 28px;display:flex;align-items:center;height:56px;gap:14px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(26,122,60,.25);}
+.hdr-logo{background:white;color:var(--green);font-family:'Bebas Neue',sans-serif;font-size:20px;padding:3px 10px;border-radius:3px;letter-spacing:1px;}
+header h1{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:3px;color:rgba(255,255,255,.9);}
+.hdr-badge{margin-left:auto;background:rgba(255,255,255,.25);padding:3px 12px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:1px;color:white;display:none;}
+
+.screen{display:none;width:100%;max-width:700px;padding:40px 20px 80px;animation:fadeUp .35s ease;}
+.screen.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:38px 36px;box-shadow:0 2px 12px rgba(26,122,60,.07);}
+.step-pill{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--green);background:var(--green-light);border:1px solid var(--green-mid);padding:5px 12px;border-radius:100px;margin-bottom:16px;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+h2{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--text);margin-bottom:8px;}
+.subtitle{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+label{display:block;font-size:11px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+
+input[type="text"]{width:100%;background:#f8faf9;border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;border-radius:9px;margin-bottom:10px;outline:none;transition:border-color .2s,box-shadow .2s;}
+input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,60,.1);}
+
+/* Autocomplete dropdown */
+.autocomplete-wrap{position:relative;margin-bottom:22px;}
+.dropdown{position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;z-index:50;display:none;max-height:220px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.1);}
+.dropdown.open{display:block;}
+.dd-item{padding:13px 16px;font-size:15px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;}
+.dd-item:last-child{border-bottom:none;}
+.dd-item:hover,.dd-item.active{background:var(--green-light);}
+.dd-item .dd-name{color:var(--text);}
+.dd-item .dd-status{font-size:11px;color:var(--muted);margin-top:2px;}
+.dd-item .dd-status.done{color:var(--green);}
+.dd-item .dd-status.partial{color:#d4820a;}
+
+.lang-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:26px;}
+.lang-btn{background:#f8faf9;border:2px solid var(--border);border-radius:10px;padding:20px 10px;text-align:center;cursor:pointer;transition:all .2s;color:var(--muted);}
+.lang-btn:hover{border-color:var(--green-mid);color:var(--text);background:var(--green-light);}
+.lang-btn.sel{border-color:var(--green);background:var(--green-light);color:var(--green-dark);}
+.lang-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;background:var(--green);color:white;border:none;border-radius:9px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;cursor:pointer;transition:background .2s,box-shadow .2s,transform .1s;}
+.btn:hover{background:var(--accent-hover);box-shadow:0 4px 22px rgba(26,122,60,.3);}
+.btn:active{transform:scale(.98);}
+.btn.gold{background:#d4820a;color:white;}
+.btn.gold:hover{background:#b56d08;}
+.btn.ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted);font-size:14px;letter-spacing:1px;}
+.btn.ghost:hover{background:var(--green-light);color:var(--green-dark);border-color:var(--green-mid);}
+
+/* VIDEO FULLSCREEN OVERLAY — locks screen while video plays */
+.video-fs-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  flex-direction: column;
+}
+.video-fs-overlay.active { display: flex; }
+
+.video-fs-topbar {
+  background: var(--green-dark);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.video-fs-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: white;
+}
+.video-fs-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.video-fs-pip {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.3);
+  border: 2px solid rgba(255,255,255,.5);
+}
+.video-fs-pip.done { background: var(--green); border-color: #6abf8a; }
+.video-fs-pip.current { background: #f0c040; border-color: #f0c040; animation: pulse 1s infinite; }
+
+.video-fs-iframe-wrap {
+  flex: 1;
+  position: relative;
+}
+.video-fs-iframe-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Invisible blocker to prevent right-click / touch escape */
+.video-fs-blocker {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  /* transparent — only blocks keyboard/touch shortcuts */
+}
+
+/* VIDEO SCREEN card (launch button) */
+.video-card{background:var(--green-light);border:1.5px solid var(--green-mid);border-radius:12px;padding:28px 24px;margin-bottom:20px;text-align:center;}
+.yt-icon{font-size:50px;display:block;margin-bottom:14px;}
+.vid-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--green-dark);margin-bottom:6px;}
+.vid-src{font-size:12px;color:var(--muted);margin-bottom:20px;}
+.watch-btn{display:inline-flex;align-items:center;gap:10px;background:var(--green);color:white;border:none;border-radius:9px;padding:16px 32px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:background .2s;}
+.watch-btn:hover{background:var(--green-dark);}
+.watch-btn.launched{background:#888;}
+
+/* CHECKPOINT */
+.checkpoint-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10000;align-items:center;justify-content:center;}
+.checkpoint-overlay.show{display:flex;}
+.checkpoint-box{background:white;border:3px solid var(--green);border-radius:16px;padding:42px 38px;max-width:460px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(26,122,60,.3);}
+.checkpoint-box .cp-icon{font-size:48px;margin-bottom:16px;}
+.checkpoint-box h3{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--green);margin-bottom:10px;}
+.checkpoint-box p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:26px;}
+.cp-progress{display:flex;justify-content:center;gap:8px;margin-bottom:24px;}
+.cp-dot{width:12px;height:12px;border-radius:50%;background:var(--border);}
+.cp-dot.done{background:var(--green);}
+.cp-dot.current{background:#d4820a;animation:pulse 1s infinite;}
+
+/* PROGRESS BAR */
+.prog-section{background:var(--green-light);border:1.5px solid var(--green-mid);border-radius:10px;padding:16px 20px;margin-bottom:18px;}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.prog-label{font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;}
+.prog-count{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#d4820a;}
+.prog-count.done{color:var(--green);}
+.prog-track{background:var(--green-mid);border-radius:100px;height:8px;overflow:hidden;}
+.prog-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--green-dark),var(--green));border-radius:100px;transition:width .5s ease;}
+.prog-fill.done{background:var(--green);}
+
+.notice-box{border-radius:9px;padding:14px 18px;font-size:13.5px;line-height:1.6;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;}
+.notice-box.waiting{background:#fff8ec;border:1.5px solid #f0d08a;color:#8a5e00;}
+.notice-box.ready{background:var(--green-light);border:1.5px solid var(--green-mid);color:var(--green-dark);}
+
+/* PASSCODE */
+.pass-box{background:var(--green-light);border:2px solid var(--green);border-radius:12px;padding:32px;text-align:center;margin-bottom:28px;position:relative;overflow:hidden;}
+.pass-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(26,122,60,.08) 0%,transparent 70%);}
+.pass-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.pass-digits{font-family:'Bebas Neue',sans-serif;font-size:68px;letter-spacing:14px;color:var(--green-dark);text-shadow:0 0 30px rgba(26,122,60,.2);line-height:1;margin-bottom:10px;}
+.pass-note{font-size:12px;color:var(--muted);font-style:italic;}
+.code-row{display:flex;gap:10px;margin-bottom:10px;}
+.code-row input[type="password"]{flex:1;margin-bottom:0;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:8px;}
+.code-row .btn{flex:0 0 auto;width:auto;padding:14px 24px;font-size:15px;letter-spacing:1px;}
+.err-msg{display:none;background:#fff0f0;border:1px solid #f5b8b8;color:#c0392b;font-size:13px;padding:10px 14px;border-radius:7px;margin-bottom:14px;}
+
+/* DONE SCREEN */
+.done-screen-box{background:white;border:2px solid var(--green);border-radius:16px;padding:52px 36px;text-align:center;box-shadow:0 4px 24px rgba(26,122,60,.15);}
+.done-checkmark{font-size:80px;margin-bottom:16px;display:block;}
+.done-name{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:var(--green);margin-bottom:10px;}
+.done-msg{font-size:16px;color:var(--muted);line-height:1.6;margin-bottom:28px;}
+.done-badge{display:inline-block;background:var(--green);color:white;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;padding:12px 32px;border-radius:100px;margin-bottom:28px;}
+
+@media(max-width:560px){.lang-grid{grid-template-columns:1fr;}.card{padding:28px 20px;}}
+</style>
+</head>
+<body>
+
+<!-- ═══ FULLSCREEN VIDEO OVERLAY ═══ -->
+<div class="video-fs-overlay" id="video-fs-overlay">
+  <div class="video-fs-topbar">
+    <div class="video-fs-name" id="fs-name-label">Food Fair Training</div>
+    <div class="video-fs-progress" id="fs-progress-pips"></div>
+  </div>
+  <div class="video-fs-iframe-wrap">
+    <iframe id="video-iframe"
+      src=""
+      allow="autoplay; encrypted-media; fullscreen"
+      allowfullscreen>
+    </iframe>
+    <div class="video-fs-blocker" id="video-fs-blocker"></div>
+  </div>
+</div>
+
+<header>
+  <div class="hdr-logo">Food Fair</div>
+  <h1>Food Fair Training Portal</h1>
+  <div class="hdr-badge" id="hdr-badge"></div>
+</header>
+
+<!-- ═══ CHECKPOINT OVERLAY ═══ -->
+<div class="checkpoint-overlay" id="cp-overlay">
+  <div class="checkpoint-box">
+    <div class="cp-icon">⏸️</div>
+    <h3 id="cp-title">STILL WATCHING?</h3>
+    <p id="cp-msg">The video has been paused. Click the button below to confirm you are still watching and continue.</p>
+    <div class="cp-progress" id="cp-dots"></div>
+    <button class="btn" onclick="continueWatching()">
+      ▶ &nbsp;<span id="cp-btn-label">YES, CONTINUE WATCHING</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 1: SIGN IN ═══ -->
+<div class="screen active" id="signin-screen">
+  <div class="card">
+    <div class="step-pill"><div class="dot"></div> Step 1 of 4</div>
+    <h2 id="s1-title">Employee Sign-In</h2>
+    <p class="subtitle" id="s1-sub">Start typing your name below. You must be on the employee list to access this training.</p>
+
+    <label id="s1-label">Your Full Name</label>
+    <div class="autocomplete-wrap">
+      <input type="text" id="name-input" placeholder="Type your full name..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <div class="dropdown" id="name-dropdown"></div>
+    </div>
+
+    <label id="s1-lang-label">Select Your Language</label>
+    <div class="lang-grid">
+      <div class="lang-btn" id="lang-en" onclick="selectLang('en')">
+        <div class="lang-name">English</div>
+      </div>
+      <div class="lang-btn" id="lang-es" onclick="selectLang('es')">
+        <div class="lang-name">Español</div>
+      </div>
+      <div class="lang-btn" id="lang-ht" onclick="selectLang('ht')">
+        <div class="lang-name">Kreyòl</div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="startTraining()">BEGIN TRAINING →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 2: VIDEO ═══ -->
+<div class="screen" id="video-screen">
+  <div class="card">
+    <div class="step-pill"><div class="dot"></div> Step 2 of 3</div>
+    <h2 id="s2-title">Training Video</h2>
+    <p class="subtitle" id="s2-sub">New York State — Workplace Training · Food Fair Meat Department</p>
+
+    <div class="video-card">
+      <span class="yt-icon">▶️</span>
+      <div class="vid-title" id="vid-title">MANDATORY WORKPLACE TRAINING</div>
+      <div class="vid-src" id="vid-src">Official video · New York State Department of Labor</div>
+      <button class="watch-btn" id="watch-btn" onclick="launchVideo()">
+        ▶ &nbsp;<span id="watch-label">PLAY VIDEO FULLSCREEN</span>
+      </button>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;font-style:italic;" id="return-note">Video plays here fullscreen — a checkpoint will appear every 10 minutes</div>
+    </div>
+
+    <div class="prog-section">
+      <div class="prog-top">
+        <div class="prog-label" id="prog-label">VIEWING CHECKPOINTS</div>
+        <div class="prog-count" id="prog-count">0 / 4</div>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+    </div>
+
+    <div class="notice-box waiting" id="notice-waiting">
+      <span style="font-size:20px">⏸️</span>
+      <span id="notice-waiting-text">Every 10 minutes a checkpoint will appear. Click "Continue Watching" each time to confirm you are still watching. Complete all 4 checkpoints to finish.</span>
+    </div>
+    <div class="notice-box ready" id="notice-ready" style="display:none">
+      <span style="font-size:20px">✅</span>
+      <span id="notice-ready-text">All checkpoints complete! Click below to finish your training.</span>
+    </div>
+
+    <button class="btn" id="get-code-btn" onclick="goToDone()" disabled>
+      ✅ &nbsp;<span id="get-code-label">COMPLETE TRAINING</span>
+    </button>
+    <button class="btn ghost" style="margin-top:10px;" onclick="saveAndExit()">
+      💾 &nbsp;<span id="save-exit-label">Save Progress & Exit</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 3: DONE ═══ -->
+<div class="screen" id="done-screen">
+  <div class="done-screen-box">
+    <span class="done-checkmark">✅</span>
+    <div class="done-badge" id="done-badge">TRAINING COMPLETE</div>
+    <div class="done-name" id="done-name"></div>
+    <div class="done-msg" id="done-msg">You have successfully completed the mandatory workplace training. Your completion has been recorded.</div>
+    <button class="btn" onclick="resetAll()" style="max-width:300px;margin:0 auto;">
+      ← <span id="next-label">Next Employee</span>
+    </button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// FIREBASE CONFIG — replace with your project details
+// Get these from: console.firebase.google.com
+// ══════════════════════════════════════════════════
+const FB_URL = 'https://foodfair-meat-default-rtdb.firebaseio.com';
+
+// ── Video URLs per language — Official NYS DOL videos ──
+const VIDEOS = {
+  en: 'https://www.youtube.com/watch?v=A9gudpiQ40M',  // English
+  es: 'https://www.youtube.com/watch?v=VH3T4agU8XE',  // Spanish — ESTADO DE NEW YORK
+  ht: 'https://www.youtube.com/watch?v=InkQgXNkITI'   // Haitian Creole — ETA NOUYÒK
+};
+
+// ── Translations ──
+const T = {
+  en: {
+    s1Title:'Employee Sign-In', s1Sub:'Type your full name exactly as given to your manager. Your name must be on the employee list.',
+    s1Label:'Your Full Name', s1LangLabel:'Select Your Language',
+    s2Title:'Training Video', s2Sub:'New York State — Workplace Training · Food Fair Meat Department',
+    vidTitle:'MANDATORY WORKPLACE TRAINING', vidSrc:'Official free video · New York State Department of Labor',
+    watchLabel:'PLAY VIDEO FULLSCREEN', returnNote:'Video plays here locked fullscreen — a checkpoint will appear every 10 minutes',
+    progLabel:'VIEWING CHECKPOINTS',
+    noticeWaiting:'Every 10 minutes a checkpoint will appear. Click "Continue Watching" each time. Complete all 4 checkpoints to finish.',
+    noticeReady:'All checkpoints complete! Click below to finish your training.',
+    getCodeLabel:'COMPLETE TRAINING', saveExit:'Save Progress & Exit',
+    cpTitle:'STILL WATCHING?', cpMsg:'Click the button to confirm you are still watching and continue.',
+    cpBtn:'YES, CONTINUE WATCHING',
+    doneBadge:'TRAINING COMPLETE', doneMsg:'You have successfully completed the mandatory workplace training. Your completion has been recorded.',
+    nextLabel:'Next Employee',
+    hdrBadge:'EN', statusDone:'Completed', statusPartial:'In Progress', statusNone:'Not Started',
+    savedMsg:'Progress saved! You can continue later by signing in with the same name.',
+    nameNotFound:'Name not found on the employee list. Check your spelling or contact your manager.'
+  },
+  es: {
+    s1Title:'Inicio de Sesión', s1Sub:'Escriba su nombre completo tal como se lo dieron a su gerente. Su nombre debe estar en la lista de empleados.',
+    s1Label:'Su Nombre Completo', s1LangLabel:'Seleccione su Idioma',
+    s2Title:'Video de Capacitación', s2Sub:'Estado de Nueva York — Capacitación Laboral · Food Fair',
+    vidTitle:'CAPACITACIÓN LABORAL OBLIGATORIA', vidSrc:'Video oficial gratuito · Departamento de Trabajo del Estado de Nueva York',
+    watchLabel:'REPRODUCIR VIDEO PANTALLA COMPLETA', returnNote:'El video se reproduce aquí bloqueado — un punto de verificación aparecerá cada 10 minutos',
+    progLabel:'PUNTOS DE VERIFICACIÓN',
+    noticeWaiting:'Cada 10 minutos aparecerá un punto de verificación. Haga clic en "Continuar Viendo" cada vez. Complete los 4 puntos para terminar.',
+    noticeReady:'¡Todos los puntos completados! Haga clic abajo para finalizar.',
+    getCodeLabel:'COMPLETAR CAPACITACIÓN', saveExit:'Guardar Progreso y Salir',
+    cpTitle:'¿SIGUE MIRANDO?', cpMsg:'Haga clic para confirmar que sigue viendo y continuar.',
+    cpBtn:'SÍ, CONTINUAR VIENDO',
+    doneBadge:'CAPACITACIÓN COMPLETADA', doneMsg:'Ha completado exitosamente la capacitación laboral obligatoria. Su finalización ha sido registrada.',
+    nextLabel:'Próximo Empleado',
+    hdrBadge:'ES', statusDone:'Completado', statusPartial:'En Progreso', statusNone:'No Iniciado',
+    savedMsg:'¡Progreso guardado! Puede continuar más tarde ingresando con el mismo nombre.',
+    nameNotFound:'Nombre no encontrado en la lista. Verifique la ortografía o contacte a su gerente.'
+  },
+  ht: {
+    s1Title:'Koneksyon Anplwaye', s1Sub:'Ekri non konplè ou jan manadjè ou ba ou li a. Non ou dwe nan lis anplwaye yo.',
+    s1Label:'Non Konplè Ou', s1LangLabel:'Chwazi Lang Ou',
+    s2Title:'Videyo Fòmasyon', s2Sub:'Eta Nouyòk — Fòmasyon Travay · Food Fair',
+    vidTitle:'FÒMASYON TRAVAY OBLIGATWA', vidSrc:'Videyo ofisyèl gratis · Depatman Travay Eta Nouyòk',
+    watchLabel:'JWE VIDEYO AN PLEN EKRAN', returnNote:'Videyo a jwe isit la bloke — yon pwent verifikasyon ap parèt chak 10 minit',
+    progLabel:'PWENT VERIFIKASYON',
+    noticeWaiting:'Chak 10 minit yon pwent verifikasyon ap parèt. Klike "Kontinye Gade" chak fwa. Konplete 4 pwent pou fini.',
+    noticeReady:'Tout pwent yo konplete! Klike anba pou fini fòmasyon ou.',
+    getCodeLabel:'KONPLETE FÒMASYON', saveExit:'Sove Pwogrè & Sòti',
+    cpTitle:'TOUJOU GADE?', cpMsg:'Klike pou konfime ou toujou gade epi kontinye.',
+    cpBtn:'WI, KONTINYE GADE',
+    doneBadge:'FÒMASYON KONPLETE', doneMsg:'Ou te konplete avèk siksè fòmasyon travay obligatwa a. Konplesyon ou a te anrejistre.',
+    nextLabel:'Anplwaye Pwochen',
+    hdrBadge:'HT', statusDone:'Konplete', statusPartial:'An Pwogrè', statusNone:'Pa Kòmanse',
+    savedMsg:'Pwogrè sove! Ou ka kontinye pita lè ou konekte avèk menm non an.',
+    nameNotFound:'Non pa jwenn nan lis la. Verifye òtograf la oswa kontakte manadjè ou.'
+  }
+};
+
+// ── State ──
+let employees = [];
+let selectedName = '';
+let selectedLang = 'en';
+let generatedCode = '';
+let checkpointsDone = 0;
+const TOTAL_CHECKPOINTS = 4;
+const CHECKPOINT_MS = 10 * 60 * 1000; // 10 minutes
+let cpTimer = null;
+let videoStarted = false;
+
+// ── Firebase helpers ──
+async function fbGet(path) {
+  try {
+    const r = await fetch(FB_URL + path + '.json');
+    return await r.json();
+  } catch(e) { return null; }
+}
+async function fbSet(path, data) {
+  try {
+    await fetch(FB_URL + path + '.json', {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+    });
+  } catch(e) {}
+}
+async function fbPatch(path, data) {
+  try {
+    await fetch(FB_URL + path + '.json', {
+      method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+    });
+  } catch(e) {}
+}
+
+// ── Load employees from Firebase ──
+async function loadEmployees() {
+  const data = await fbGet('/employees');
+  if (data) {
+    employees = Object.entries(data).map(([id, val]) => ({id, ...val}));
+  }
+}
+
+// ── Autocomplete (disabled — exact match on submit) ──
+function filterNames() {} // kept for safety, not called
+function selectEmployee() {}
+function navDropdown() {}
+
+function selectLang(lang) {
+  selectedLang = lang;
+  ['en','es','ht'].forEach(l => document.getElementById('lang-'+l).classList.remove('sel'));
+  document.getElementById('lang-'+lang).classList.add('sel');
+  applyLangToSignin();
+}
+
+function applyLangToSignin() {
+  const t = T[selectedLang];
+  document.getElementById('s1-title').textContent = t.s1Title;
+  document.getElementById('s1-sub').textContent = t.s1Sub;
+  document.getElementById('s1-label').textContent = t.s1Label;
+  document.getElementById('s1-lang-label').textContent = t.s1LangLabel;
+}
+
+// ── Start training ──
+async function startTraining() {
+  const typed = document.getElementById('name-input').value.trim();
+  if (!typed) {
+    shakeInput('name-input');
+    return;
+  }
+
+  // Case-insensitive match against employee list
+  const emp = employees.find(e => e.name.toLowerCase() === typed.toLowerCase());
+
+  if (!emp) {
+    shakeInput('name-input');
+    showNameError(T[selectedLang].nameNotFound || 'Name not found. Please check your spelling or contact your manager.');
+    return;
+  }
+
+  // Use the name exactly as it appears in the list
+  selectedName = emp.name;
+
+  // Load existing progress
+  checkpointsDone = emp.checkpoints || 0;
+  generatedCode = emp.code || String(Math.floor(100000 + Math.random() * 900000));
+  if (!emp.code) await fbPatch('/employees/' + emp.id, { code: generatedCode });
+
+  hideNameError();
+
+  const t = T[selectedLang];
+  document.getElementById('hdr-badge').textContent = selectedName + ' · ' + t.hdrBadge;
+  document.getElementById('hdr-badge').style.display = 'block';
+
+  applyLangToVideo();
+  updateCheckpointUI();
+  showScreen('video-screen');
+}
+
+function shakeInput(id) {
+  const el = document.getElementById(id);
+  el.style.borderColor = '#e74c3c';
+  el.style.boxShadow = '0 0 0 3px rgba(231,76,60,.15)';
+  el.focus();
+  setTimeout(() => { el.style.borderColor = ''; el.style.boxShadow = ''; }, 2000);
+}
+
+function showNameError(msg) {
+  let err = document.getElementById('name-error');
+  if (!err) {
+    err = document.createElement('div');
+    err.id = 'name-error';
+    err.style.cssText = 'color:#c0392b;font-size:13px;padding:10px 14px;background:#fff0f0;border:1px solid #f5b8b8;border-radius:8px;margin-bottom:16px;';
+    const wrap = document.getElementById('name-input').closest('.autocomplete-wrap');
+    wrap.parentNode.insertBefore(err, wrap.nextSibling);
+  }
+  err.textContent = '❌ ' + msg;
+  err.style.display = 'block';
+}
+
+function hideNameError() {
+  const err = document.getElementById('name-error');
+  if (err) err.style.display = 'none';
+}
+
+
+function applyLangToVideo() {
+  const t = T[selectedLang];
+  document.getElementById('s2-title').textContent = t.s2Title;
+  document.getElementById('s2-sub').textContent = t.s2Sub;
+  document.getElementById('vid-title').textContent = t.vidTitle;
+  document.getElementById('vid-src').textContent = t.vidSrc;
+  document.getElementById('watch-label').textContent = t.watchLabel;
+  document.getElementById('return-note').textContent = t.returnNote;
+  document.getElementById('prog-label').textContent = t.progLabel;
+  document.getElementById('notice-waiting-text').textContent = t.noticeWaiting;
+  document.getElementById('notice-ready-text').textContent = t.noticeReady;
+  document.getElementById('get-code-label').textContent = t.getCodeLabel;
+  document.getElementById('save-exit-label').textContent = t.saveExit;
+  document.getElementById('watch-label').textContent = t.watchLabel;
+}
+
+// ── Launch fullscreen video overlay ──
+function launchVideo() {
+  // Extract video ID robustly from URL
+  const url = VIDEOS[selectedLang];
+  const videoId = new URL(url).searchParams.get('v');
+  const embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0&modestbranding=1&controls=1';
+
+  document.getElementById('video-iframe').src = embedUrl;
+  document.getElementById('fs-name-label').textContent = selectedName + ' — Food Fair Training';
+  buildFsPips();
+
+  const overlay = document.getElementById('video-fs-overlay');
+  overlay.classList.add('active');
+
+  // Request true browser fullscreen on the overlay element
+  overlay.requestFullscreen().catch(() => {});
+
+  if (!videoStarted) {
+    videoStarted = true;
+    scheduleCheckpoint();
+    document.getElementById('watch-btn').classList.add('launched');
+  }
+
+  document.addEventListener('keydown', trapKeys, true);
+}
+
+function trapKeys(e) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+}
+
+function buildFsPips() {
+  const container = document.getElementById('fs-progress-pips');
+  container.innerHTML = '';
+  for (let i = 0; i < TOTAL_CHECKPOINTS; i++) {
+    const d = document.createElement('div');
+    d.className = 'video-fs-pip' + (i < checkpointsDone ? ' done' : i === checkpointsDone ? ' current' : '');
+    container.appendChild(d);
+  }
+}
+
+// ── Checkpoint system ──
+function scheduleCheckpoint() {
+  if (checkpointsDone >= TOTAL_CHECKPOINTS) return;
+  clearTimeout(cpTimer);
+  cpTimer = setTimeout(triggerCheckpoint, CHECKPOINT_MS);
+}
+
+function triggerCheckpoint() {
+  const t = T[selectedLang];
+  // Pause video by removing src temporarily
+  const iframe = document.getElementById('video-iframe');
+  iframe.dataset.pausedSrc = iframe.src;
+  iframe.src = '';
+
+  // Exit fullscreen so checkpoint popup is visible
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  }
+
+  document.getElementById('cp-title').textContent = t.cpTitle;
+  document.getElementById('cp-msg').textContent = t.cpMsg;
+  document.getElementById('cp-btn-label').textContent = t.cpBtn;
+  buildCpDots();
+  document.getElementById('cp-overlay').classList.add('show');
+}
+
+function buildCpDots() {
+  const container = document.getElementById('cp-dots');
+  container.innerHTML = '';
+  for (let i = 0; i < TOTAL_CHECKPOINTS; i++) {
+    const d = document.createElement('div');
+    d.className = 'cp-dot' + (i < checkpointsDone ? ' done' : i === checkpointsDone ? ' current' : '');
+    container.appendChild(d);
+  }
+}
+
+async function continueWatching() {
+  checkpointsDone++;
+  document.getElementById('cp-overlay').classList.remove('show');
+  updateCheckpointUI();
+  buildFsPips();
+
+  const emp = employees.find(e => e.name === selectedName);
+  if (emp) {
+    const update = { checkpoints: checkpointsDone };
+    if (checkpointsDone >= TOTAL_CHECKPOINTS) update.completed = true;
+    await fbPatch('/employees/' + emp.id, update);
+  }
+
+  if (checkpointsDone < TOTAL_CHECKPOINTS) {
+    // Resume video — restore src
+    const iframe = document.getElementById('video-iframe');
+    if (iframe.dataset.pausedSrc) {
+      iframe.src = iframe.dataset.pausedSrc;
+      iframe.dataset.pausedSrc = '';
+    }
+    // Re-enter fullscreen
+    const overlay = document.getElementById('video-fs-overlay');
+    overlay.requestFullscreen().catch(() => {});
+    scheduleCheckpoint();
+  } else {
+    // All checkpoints done — close fullscreen overlay
+    closeVideoOverlay();
+  }
+}
+
+function updateCheckpointUI() {
+  const done = checkpointsDone;
+  const total = TOTAL_CHECKPOINTS;
+  const pct = (done / total) * 100;
+  document.getElementById('prog-count').textContent = done + ' / ' + total;
+  document.getElementById('prog-fill').style.width = pct + '%';
+
+  if (done >= total) {
+    document.getElementById('prog-count').classList.add('done');
+    document.getElementById('prog-fill').classList.add('done');
+    document.getElementById('notice-waiting').style.display = 'none';
+    document.getElementById('notice-ready').style.display = 'flex';
+    const btn = document.getElementById('get-code-btn');
+    btn.disabled = false;
+    btn.innerHTML = '✅ &nbsp;' + T[selectedLang].getCodeLabel;
+  }
+}
+
+// ── Save & Exit ──
+async function saveAndExit() {
+  const emp = employees.find(e => e.name === selectedName);
+  if (emp) await fbPatch('/employees/' + emp.id, { checkpoints: checkpointsDone });
+  clearTimeout(cpTimer);
+  alert(T[selectedLang].savedMsg);
+  resetAll();
+}
+
+// ── Done screen ──
+async function goToDone() {
+  const t = T[selectedLang];
+  const emp = employees.find(e => e.name === selectedName);
+  if (emp) {
+    await fbPatch('/employees/' + emp.id, {
+      completed: true, checkpoints: TOTAL_CHECKPOINTS,
+      completedAt: new Date().toISOString()
+    });
+  }
+  document.getElementById('done-name').textContent = selectedName;
+  document.getElementById('done-badge').textContent = t.doneBadge;
+  document.getElementById('done-msg').textContent = t.doneMsg;
+  document.getElementById('next-label').textContent = t.nextLabel;
+  // Exit fullscreen if active
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  showScreen('done-screen');
+}
+
+function closeVideoOverlay() {
+  const overlay = document.getElementById('video-fs-overlay');
+  overlay.classList.remove('active');
+  document.getElementById('video-iframe').src = '';
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  document.removeEventListener('keydown', trapKeys, true);
+}
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetAll() {
+  clearTimeout(cpTimer);
+  closeVideoOverlay();
+  selectedName=''; generatedCode=''; checkpointsDone=0; videoStarted=false;
+  document.getElementById('name-input').value='';
+  document.getElementById('hdr-badge').style.display='none';
+  document.getElementById('notice-waiting').style.display='flex';
+  document.getElementById('notice-ready').style.display='none';
+  document.getElementById('get-code-btn').disabled=true;
+  document.getElementById('get-code-btn').innerHTML='✅ &nbsp;<span id="get-code-label">' + T[selectedLang].getCodeLabel + '</span>';
+  document.getElementById('prog-fill').style.width='0%';
+  document.getElementById('prog-fill').classList.remove('done');
+  document.getElementById('prog-count').classList.remove('done');
+  document.getElementById('prog-count').textContent='0 / 4';
+  document.getElementById('cp-overlay').classList.remove('show');
+  document.getElementById('watch-btn').classList.remove('launched');
+  showScreen('signin-screen');
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('lang-en').classList.add('sel');
+  await loadEmployees();
+  document.getElementById('name-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startTraining();
+  });
+});
+</script>
+</body>
+</html>
