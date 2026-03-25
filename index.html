@@ -69,6 +69,13 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(24,95,165,.1);}
   background: #000;
   z-index: 9999;
   flex-direction: column;
+  /* Cover notched iPhones */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  /* iOS Safari fullscreen */
+  -webkit-overflow-scrolling: touch;
 }
 .video-fs-overlay.active { display: flex; }
 
@@ -188,10 +195,11 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(24,95,165,.1);}
   <div class="video-fs-iframe-wrap">
     <iframe id="video-iframe"
       src=""
-      allow="autoplay; encrypted-media; fullscreen"
-      allowfullscreen>
+      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+      allowfullscreen
+      referrerpolicy="no-referrer-when-downgrade"
+      style="position:absolute;inset:0;width:100%;height:100%;border:none;">
     </iframe>
-    <div class="video-fs-blocker" id="video-fs-blocker"></div>
   </div>
 </div>
 
@@ -569,10 +577,9 @@ function applyLangToVideo() {
 
 // ── Launch fullscreen video overlay ──
 function launchVideo() {
-  // Extract video ID robustly from URL
   const url = VIDEOS[selectedLang];
   const videoId = new URL(url).searchParams.get('v');
-  const embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0&modestbranding=1&controls=1';
+  const embedUrl = 'https://www.youtube-nocookie.com/embed/' + videoId + '?autoplay=1&rel=0&modestbranding=1&controls=1&playsinline=1';
 
   document.getElementById('video-iframe').src = embedUrl;
   document.getElementById('fs-name-label').textContent = selectedName + ' — Food Fair Training';
@@ -581,8 +588,12 @@ function launchVideo() {
   const overlay = document.getElementById('video-fs-overlay');
   overlay.classList.add('active');
 
-  // Request true browser fullscreen on the overlay element
-  overlay.requestFullscreen().catch(() => {});
+  // Cross-browser fullscreen — works on Chrome, Firefox, Safari, iOS, Android
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+  else if (el.msRequestFullscreen) el.msRequestFullscreen();
 
   if (!videoStarted) {
     videoStarted = true;
@@ -625,9 +636,7 @@ function triggerCheckpoint() {
   iframe.src = '';
 
   // Exit fullscreen so checkpoint popup is visible
-  if (document.fullscreenElement) {
-    document.exitFullscreen().catch(() => {});
-  }
+  exitFS();
 
   document.getElementById('cp-title').textContent = t.cpTitle;
   document.getElementById('cp-msg').textContent = t.cpMsg;
@@ -667,8 +676,10 @@ async function continueWatching() {
       iframe.dataset.pausedSrc = '';
     }
     // Re-enter fullscreen
-    const overlay = document.getElementById('video-fs-overlay');
-    overlay.requestFullscreen().catch(() => {});
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
     scheduleCheckpoint();
   } else {
     // All checkpoints done — close fullscreen overlay
@@ -718,15 +729,32 @@ async function goToDone() {
   document.getElementById('done-msg').textContent = t.doneMsg;
   document.getElementById('next-label').textContent = t.nextLabel;
   // Exit fullscreen if active
-  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  exitFS();
   showScreen('done-screen');
+}
+
+// ── Cross-browser fullscreen helpers ──
+function enterFS() {
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+  else if (el.msRequestFullscreen) el.msRequestFullscreen();
+}
+function exitFS() {
+  if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
+    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+    else if (document.msExitFullscreen) document.msExitFullscreen();
+  }
 }
 
 function closeVideoOverlay() {
   const overlay = document.getElementById('video-fs-overlay');
   overlay.classList.remove('active');
   document.getElementById('video-iframe').src = '';
-  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  exitFS();
   document.removeEventListener('keydown', trapKeys, true);
 }
 
