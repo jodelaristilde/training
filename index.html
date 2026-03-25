@@ -219,32 +219,30 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,60,.1);}
 <div class="screen active" id="signin-screen">
   <div class="card">
     <div class="step-pill"><div class="dot"></div> Step 1 of 4</div>
+
+    <label id="s1-lang-label" style="margin-bottom:10px;">Select Your Language · Seleccione su Idioma · Chwazi Lang Ou</label>
+    <div class="lang-grid" style="margin-bottom:28px;">
+      <div class="lang-btn" id="lang-en" onclick="selectLang('en')">
+        <div class="lang-name">🇺🇸 English</div>
+      </div>
+      <div class="lang-btn" id="lang-es" onclick="selectLang('es')">
+        <div class="lang-name">🇩🇴 Español</div>
+      </div>
+      <div class="lang-btn" id="lang-ht" onclick="selectLang('ht')">
+        <div class="lang-name">🇭🇹 Kreyòl</div>
+      </div>
+    </div>
+
     <h2 id="s1-title">Employee Sign-In</h2>
-    <p class="subtitle" id="s1-sub">Start typing your name below. You must be on the employee list to access this training.</p>
+    <p class="subtitle" id="s1-sub">Type your full name exactly as given to your manager. Your name must be on the employee list.</p>
 
     <label id="s1-label">Your Full Name</label>
     <div class="autocomplete-wrap">
-      <input type="text" id="name-input" placeholder="First name and last name..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <input type="text" id="name-input" placeholder="First name and last name..." autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false">
       <div class="dropdown" id="name-dropdown"></div>
     </div>
 
-    <label id="s1-lang-label">Select Your Language</label>
-    <div class="lang-grid">
-      <div class="lang-btn" id="lang-en" onclick="selectLang('en')">
-        <div class="lang-name">English</div>
-      </div>
-      <div class="lang-btn" id="lang-es" onclick="selectLang('es')">
-        <div class="lang-name">Español</div>
-      </div>
-      <div class="lang-btn" id="lang-ht" onclick="selectLang('ht')">
-        <div class="lang-name">Kreyòl</div>
-      </div>
-    </div>
-
-    <button class="btn" onclick="startTraining()" style="font-size:14px;padding:16px;letter-spacing:1.5px;line-height:1.8;">
-      BEGIN TRAINING &nbsp;·&nbsp; COMENZAR &nbsp;·&nbsp; KÒMANSE &nbsp;→
-    </button>
-
+    <button class="btn" onclick="startTraining()" id="begin-btn">BEGIN TRAINING →</button>
   </div>
 </div>
 
@@ -341,7 +339,8 @@ const T = {
     nameNotFound:'Your name is not on the employee list. See your manager.',
     needFullName:'Please enter your first AND last name (e.g. Maria Gonzalez).',
     alreadyDoneTitle:'TRAINING ALREADY COMPLETED',
-    alreadyDoneMsg:'has already completed this training. No further action needed.'
+    alreadyDoneMsg:'has already completed this training. No further action needed.',
+    beginBtn:'BEGIN TRAINING →'
   },
   es: {
     s1Title:'Inicio de Sesión', s1Sub:'Escriba su nombre completo tal como se lo dieron a su gerente. Su nombre debe estar en la lista de empleados.',
@@ -362,7 +361,8 @@ const T = {
     nameNotFound:'Su nombre no está en la lista de empleados. Consulte a su gerente.',
     needFullName:'Por favor ingrese su nombre Y apellido (ej. Maria Gonzalez).',
     alreadyDoneTitle:'CAPACITACIÓN YA COMPLETADA',
-    alreadyDoneMsg:'ya completó esta capacitación. No se requiere ninguna acción adicional.'
+    alreadyDoneMsg:'ya completó esta capacitación. No se requiere ninguna acción adicional.',
+    beginBtn:'COMENZAR CAPACITACIÓN →'
   },
   ht: {
     s1Title:'Koneksyon Anplwaye', s1Sub:'Ekri non konplè ou jan manadjè ou ba ou li a. Non ou dwe nan lis anplwaye yo.',
@@ -383,7 +383,8 @@ const T = {
     nameNotFound:'Non ou pa nan lis anplwaye yo. Wè manadjè ou.',
     needFullName:'Tanpri antre prenon W AK non fanmi W (egzanp: Maria Gonzalez).',
     alreadyDoneTitle:'FÒMASYON DEJA KONPLETE',
-    alreadyDoneMsg:'deja konplete fòmasyon sa a. Pa gen okenn aksyon siplemantè ki nesesè.'
+    alreadyDoneMsg:'deja konplete fòmasyon sa a. Pa gen okenn aksyon siplemantè ki nesesè.',
+    beginBtn:'KÒMANSE FÒMASYON →'
   }
 };
 
@@ -438,9 +439,6 @@ function selectLang(lang) {
   ['en','es','ht'].forEach(l => document.getElementById('lang-'+l).classList.remove('sel'));
   document.getElementById('lang-'+lang).classList.add('sel');
   applyLangToSignin();
-  // Auto-start if name is already typed
-  const typed = document.getElementById('name-input').value.trim();
-  if (typed.split(/\s+/).length >= 2) startTraining();
 }
 
 function applyLangToSignin() {
@@ -448,7 +446,9 @@ function applyLangToSignin() {
   document.getElementById('s1-title').textContent = t.s1Title;
   document.getElementById('s1-sub').textContent = t.s1Sub;
   document.getElementById('s1-label').textContent = t.s1Label;
-  document.getElementById('s1-lang-label').textContent = t.s1LangLabel;
+  document.getElementById('begin-btn').textContent = t.beginBtn;
+  const ph = selectedLang === 'es' ? 'Nombre y apellido...' : selectedLang === 'ht' ? 'Prenon ak non fanmi...' : 'First name and last name...';
+  document.getElementById('name-input').placeholder = ph;
 }
 
 // ── Start training ──
@@ -730,6 +730,8 @@ function closeVideoOverlay() {
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   document.removeEventListener('keydown', trapKeys, true);
 }
+
+function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
