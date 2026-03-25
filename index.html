@@ -200,6 +200,12 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(24,95,165,.1);}
       referrerpolicy="no-referrer-when-downgrade"
       style="position:absolute;inset:0;width:100%;height:100%;border:none;">
     </iframe>
+    <div id="tap-to-play" onclick="dismissTapOverlay()" style="display:none;position:absolute;inset:0;z-index:10;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:rgba(0,0,0,.5);">
+      <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;">
+        <div style="width:0;height:0;border-top:22px solid transparent;border-bottom:22px solid transparent;border-left:36px solid #185FA5;margin-left:8px;"></div>
+      </div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:white;">TAP TO PLAY</div>
+    </div>
   </div>
 </div>
 
@@ -588,6 +594,11 @@ function launchVideo() {
   const overlay = document.getElementById('video-fs-overlay');
   overlay.classList.add('active');
 
+  // Show tap-to-play on mobile (iOS Safari blocks iframe autoplay)
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const tapOverlay = document.getElementById('tap-to-play');
+  tapOverlay.style.display = isMobile ? 'flex' : 'none';
+
   // Cross-browser fullscreen — works on Chrome, Firefox, Safari, iOS, Android
   const el = document.documentElement;
   if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
@@ -602,6 +613,10 @@ function launchVideo() {
   }
 
   document.addEventListener('keydown', trapKeys, true);
+}
+
+function dismissTapOverlay() {
+  document.getElementById('tap-to-play').style.display = 'none';
 }
 
 function trapKeys(e) {
@@ -675,6 +690,7 @@ async function continueWatching() {
       iframe.src = iframe.dataset.pausedSrc;
       iframe.dataset.pausedSrc = '';
     }
+    document.getElementById('tap-to-play').style.display = 'none';
     // Re-enter fullscreen
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
