@@ -7,15 +7,15 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
 :root {
-  --green:#1a7a3c; --green-light:#e8f5ee; --green-mid:#c6e8d2; --green-dark:#145f2e;
-  --bg:#f2f7f4; --card:#ffffff; --border:#d0e4d8; --border2:#b8d4c2;
-  --text:#1a2e22; --muted:#6a8a74; --muted2:#4a6a54;
-  --accent:#1a7a3c; --accent-hover:#145f2e;
+  --green:#185FA5; --green-light:#E6F1FB; --green-mid:#B5D4F4; --green-dark:#0C447C;
+  --bg:#f0f6fd; --card:#ffffff; --border:#B5D4F4; --border2:#85B7EB;
+  --text:#042C53; --muted:#378ADD; --muted2:#185FA5;
+  --accent:#185FA5; --accent-hover:#0C447C;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;}
 
-header{width:100%;background:var(--green);padding:0 28px;display:flex;align-items:center;height:56px;gap:14px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(26,122,60,.25);}
+header{width:100%;background:var(--green);padding:0 28px;display:flex;align-items:center;height:56px;gap:14px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(24,95,165,.25);}
 .hdr-logo{background:white;color:var(--green);font-family:'Bebas Neue',sans-serif;font-size:20px;padding:3px 10px;border-radius:3px;letter-spacing:1px;}
 header h1{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:3px;color:rgba(255,255,255,.9);}
 .hdr-badge{margin-left:auto;background:rgba(255,255,255,.25);padding:3px 12px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:1px;color:white;display:none;}
@@ -24,7 +24,7 @@ header h1{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:3px;
 .screen.active{display:block;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:38px 36px;box-shadow:0 2px 12px rgba(26,122,60,.07);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:38px 36px;box-shadow:0 2px 12px rgba(24,95,165,.07);}
 .step-pill{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--green);background:var(--green-light);border:1px solid var(--green-mid);padding:5px 12px;border-radius:100px;margin-bottom:16px;}
 .dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -33,7 +33,7 @@ h2{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:v
 label{display:block;font-size:11px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
 
 input[type="text"]{width:100%;background:#f8faf9;border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;border-radius:9px;margin-bottom:10px;outline:none;transition:border-color .2s,box-shadow .2s;}
-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,60,.1);}
+input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(24,95,165,.1);}
 
 /* Autocomplete dropdown */
 .autocomplete-wrap{position:relative;margin-bottom:22px;}
@@ -48,13 +48,13 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,60,.1);}
 .dd-item .dd-status.partial{color:#d4820a;}
 
 .lang-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:26px;}
-.lang-btn{background:#f8faf9;border:2px solid var(--border);border-radius:10px;padding:20px 10px;text-align:center;cursor:pointer;transition:all .2s;color:var(--muted);}
-.lang-btn:hover{border-color:var(--green-mid);color:var(--text);background:var(--green-light);}
-.lang-btn.sel{border-color:var(--green);background:var(--green-light);color:var(--green-dark);}
+.lang-btn{background:var(--green);border:2px solid var(--green);border-radius:10px;padding:20px 10px;text-align:center;cursor:pointer;transition:all .2s;color:white;}
+.lang-btn:hover{background:var(--green-dark);border-color:var(--green-dark);color:white;}
+.lang-btn.sel{background:var(--green-dark);border-color:var(--green-dark);color:white;box-shadow:0 0 0 3px rgba(24,95,165,.3);}
 .lang-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;}
 
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;background:var(--green);color:white;border:none;border-radius:9px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;cursor:pointer;transition:background .2s,box-shadow .2s,transform .1s;}
-.btn:hover{background:var(--accent-hover);box-shadow:0 4px 22px rgba(26,122,60,.3);}
+.btn:hover{background:var(--accent-hover);box-shadow:0 4px 22px rgba(24,95,165,.3);}
 .btn:active{transform:scale(.98);}
 .btn.gold{background:#d4820a;color:white;}
 .btn.gold:hover{background:#b56d08;}
@@ -133,7 +133,7 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,60,.1);}
 /* CHECKPOINT */
 .checkpoint-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10000;align-items:center;justify-content:center;}
 .checkpoint-overlay.show{display:flex;}
-.checkpoint-box{background:white;border:3px solid var(--green);border-radius:16px;padding:42px 38px;max-width:460px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(26,122,60,.3);}
+.checkpoint-box{background:white;border:3px solid var(--green);border-radius:16px;padding:42px 38px;max-width:460px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(24,95,165,.3);}
 .checkpoint-box .cp-icon{font-size:48px;margin-bottom:16px;}
 .checkpoint-box h3{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--green);margin-bottom:10px;}
 .checkpoint-box p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:26px;}
@@ -158,9 +158,9 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,60,.1);}
 
 /* PASSCODE */
 .pass-box{background:var(--green-light);border:2px solid var(--green);border-radius:12px;padding:32px;text-align:center;margin-bottom:28px;position:relative;overflow:hidden;}
-.pass-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(26,122,60,.08) 0%,transparent 70%);}
+.pass-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(24,95,165,.08) 0%,transparent 70%);}
 .pass-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
-.pass-digits{font-family:'Bebas Neue',sans-serif;font-size:68px;letter-spacing:14px;color:var(--green-dark);text-shadow:0 0 30px rgba(26,122,60,.2);line-height:1;margin-bottom:10px;}
+.pass-digits{font-family:'Bebas Neue',sans-serif;font-size:68px;letter-spacing:14px;color:var(--green-dark);text-shadow:0 0 30px rgba(24,95,165,.2);line-height:1;margin-bottom:10px;}
 .pass-note{font-size:12px;color:var(--muted);font-style:italic;}
 .code-row{display:flex;gap:10px;margin-bottom:10px;}
 .code-row input[type="password"]{flex:1;margin-bottom:0;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:8px;}
@@ -168,7 +168,7 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,60,.1);}
 .err-msg{display:none;background:#fff0f0;border:1px solid #f5b8b8;color:#c0392b;font-size:13px;padding:10px 14px;border-radius:7px;margin-bottom:14px;}
 
 /* DONE SCREEN */
-.done-screen-box{background:white;border:2px solid var(--green);border-radius:16px;padding:52px 36px;text-align:center;box-shadow:0 4px 24px rgba(26,122,60,.15);}
+.done-screen-box{background:white;border:2px solid var(--green);border-radius:16px;padding:52px 36px;text-align:center;box-shadow:0 4px 24px rgba(24,95,165,.15);}
 .done-checkmark{font-size:80px;margin-bottom:16px;display:block;}
 .done-name{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:var(--green);margin-bottom:10px;}
 .done-msg{font-size:16px;color:var(--muted);line-height:1.6;margin-bottom:28px;}
@@ -196,7 +196,6 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,60,.1);}
 </div>
 
 <header>
-  <div class="hdr-logo">Food Fair</div>
   <h1>Food Fair Training Portal</h1>
   <div class="hdr-badge" id="hdr-badge"></div>
   <a href="admin.html" style="margin-left:auto;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.2);transition:all .2s;" onmouseover="this.style.color='white';this.style.borderColor='rgba(255,255,255,.6)'" onmouseout="this.style.color='rgba(255,255,255,.5)';this.style.borderColor='rgba(255,255,255,.2)'">Admin</a>
