@@ -431,7 +431,7 @@ function renderEmployeeList() {
         <div class="cp-pills">${pips}</div>
       </div>
       <div class="emp-actions">
-        ${!done ? `<button class="btn btn-green btn-sm" onclick="markOneDone('${id}')">✓ Mark Done</button>` : '<span style="font-size:11px;color:var(--green);">✓ Done</span>'}
+        ${!done ? `<button class="btn btn-green btn-sm" onclick="markOneDone('${id}')">✓ Mark Done</button>` : `<button class="btn btn-ghost btn-sm" onclick="printCertificate('${emp.name}','${emp.completedAt||''}')" title="Print Certificate" style="color:var(--green);border-color:var(--green);">🏅 Certificate</button>`}
         <button class="btn btn-ghost btn-sm" onclick="resetEmployee('${id}')" title="Reset progress">↺</button>
         <button class="btn btn-ghost btn-sm" onclick="deleteEmployee('${id}')" style="color:#e74c3c;border-color:#3d1010;" title="Delete">✕</button>
       </div>
@@ -655,6 +655,60 @@ function showToast(msg, type = '') {
   t.textContent = msg;
   t.className = 'toast show ' + type;
   setTimeout(() => t.className = 'toast ' + type, 3000);
+}
+
+// ── Certificate ──
+function printCertificate(name, completedAt) {
+  const dateStr = completedAt ? new Date(completedAt).toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}) : new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Certificate — ${name}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:white;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'DM Sans',sans-serif;}
+    .cert{width:800px;padding:60px 70px;border:12px solid #185FA5;outline:4px solid #B5D4F4;outline-offset:-20px;text-align:center;position:relative;}
+    .cert-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:#185FA5;margin-bottom:8px;}
+    .cert-subtitle{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#888;margin-bottom:40px;}
+    .cert-title{font-family:'Playfair Display',serif;font-size:42px;color:#042C53;margin-bottom:6px;}
+    .cert-of{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#888;margin-bottom:28px;}
+    .cert-name{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:3px;color:#185FA5;border-bottom:3px solid #185FA5;display:inline-block;padding-bottom:8px;margin-bottom:28px;}
+    .cert-body{font-size:15px;color:#444;line-height:1.8;margin-bottom:32px;max-width:520px;margin-left:auto;margin-right:auto;}
+    .cert-training{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:#042C53;background:#E6F1FB;padding:12px 28px;border-radius:8px;display:inline-block;margin-bottom:36px;}
+    .cert-footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;padding-top:24px;border-top:1px solid #ddd;}
+    .cert-sig{text-align:center;}
+    .cert-sig-line{width:180px;border-bottom:2px solid #185FA5;margin:0 auto 8px;}
+    .cert-sig-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#888;}
+    .cert-date{font-size:13px;color:#888;}
+    .cert-seal{width:70px;height:70px;border-radius:50%;border:4px solid #185FA5;display:flex;align-items:center;justify-content:center;flex-direction:column;margin:0 auto;}
+    .cert-seal-text{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:1px;color:#185FA5;text-align:center;line-height:1.3;}
+    @media print{body{min-height:auto;}@page{size:landscape;margin:0.5in;}}
+  </style></head><body>
+  <div class="cert">
+    <div class="cert-logo">FOOD FAIR</div>
+    <div class="cert-subtitle">Meat Department · New York</div>
+    <div class="cert-title">Certificate of Completion</div>
+    <div class="cert-of">This certifies that</div>
+    <div class="cert-name">${name}</div>
+    <div class="cert-body">has successfully completed the mandatory workplace training requirements as required by the<br><strong>New York State Department of Labor</strong></div>
+    <div class="cert-training">Sexual Harassment Prevention Training</div>
+    <div class="cert-footer">
+      <div class="cert-sig">
+        <div class="cert-sig-line"></div>
+        <div class="cert-sig-label">Manager Signature</div>
+      </div>
+      <div class="cert-seal">
+        <div class="cert-seal-text">FOOD FAIR<br>CERTIFIED<br>✓</div>
+      </div>
+      <div class="cert-sig">
+        <div class="cert-date">Completed: ${dateStr}</div>
+        <div class="cert-sig-line" style="margin-top:18px;"></div>
+        <div class="cert-sig-label">Date</div>
+      </div>
+    </div>
+  </div>
+  <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`);
+  win.document.close();
 }
 
 // ── Report & Export ──

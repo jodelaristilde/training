@@ -204,7 +204,7 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(24,95,165,.1);}
       <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;">
         <div style="width:0;height:0;border-top:22px solid transparent;border-bottom:22px solid transparent;border-left:36px solid #185FA5;margin-left:8px;"></div>
       </div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:white;">TAP TO PLAY</div>
+      <div id="tap-to-play-label" style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:white;">TAP TO PLAY</div>
     </div>
   </div>
 </div>
@@ -353,7 +353,7 @@ const T = {
     needFullName:'Please enter your first AND last name (e.g. Maria Gonzalez).',
     alreadyDoneTitle:'TRAINING ALREADY COMPLETED',
     alreadyDoneMsg:'has already completed this training. No further action needed.',
-    beginBtn:'BEGIN TRAINING →'
+    beginBtn:'BEGIN TRAINING →', tapPlay:'TAP TO PLAY'
   },
   es: {
     s1Title:'Inicio de Sesión', s1Sub:'Escriba su nombre completo tal como se lo dieron a su gerente. Su nombre debe estar en la lista de empleados.',
@@ -375,7 +375,7 @@ const T = {
     needFullName:'Por favor ingrese su nombre Y apellido (ej. Maria Gonzalez).',
     alreadyDoneTitle:'CAPACITACIÓN YA COMPLETADA',
     alreadyDoneMsg:'ya completó esta capacitación. No se requiere ninguna acción adicional.',
-    beginBtn:'COMENZAR CAPACITACIÓN →'
+    beginBtn:'COMENZAR CAPACITACIÓN →', tapPlay:'TOCA PARA REPRODUCIR'
   },
   ht: {
     s1Title:'Koneksyon Anplwaye', s1Sub:'Ekri non konplè ou jan manadjè ou ba ou li a. Non ou dwe nan lis anplwaye yo.',
@@ -397,7 +397,7 @@ const T = {
     needFullName:'Tanpri antre prenon W AK non fanmi W (egzanp: Maria Gonzalez).',
     alreadyDoneTitle:'FÒMASYON DEJA KONPLETE',
     alreadyDoneMsg:'deja konplete fòmasyon sa a. Pa gen okenn aksyon siplemantè ki nesesè.',
-    beginBtn:'KÒMANSE FÒMASYON →'
+    beginBtn:'KÒMANSE FÒMASYON →', tapPlay:'TAPE POU JWE'
   }
 };
 
@@ -503,6 +503,7 @@ async function startTraining() {
 
   // Load existing progress
   checkpointsDone = emp.checkpoints || 0;
+  videoStartSeconds = emp.videoPosition || (checkpointsDone * 10 * 60);
   generatedCode = emp.code || String(Math.floor(100000 + Math.random() * 900000));
   if (!emp.code) await fbPatch('/employees/' + emp.id, { code: generatedCode });
 
@@ -582,10 +583,17 @@ function applyLangToVideo() {
 }
 
 // ── Launch fullscreen video overlay ──
+// ── Launch fullscreen video overlay ──
+let videoStartSeconds = 0; // tracks where video is in seconds
+let videoTickInterval = null; // counts elapsed seconds
+
 function launchVideo() {
   const url = VIDEOS[selectedLang];
   const videoId = new URL(url).searchParams.get('v');
-  const embedUrl = 'https://www.youtube-nocookie.com/embed/' + videoId + '?autoplay=1&rel=0&modestbranding=1&controls=1&playsinline=1';
+  // start= resumes from saved position, disableseek not possible via embed but we lock controls
+  const startAt = videoStartSeconds || (checkpointsDone * 10 * 60);
+  const embedUrl = 'https://www.youtube-nocookie.com/embed/' + videoId
+    + '?autoplay=1&rel=0&modestbranding=1&controls=1&playsinline=1&disablekb=1&start=' + startAt;
 
   document.getElementById('video-iframe').src = embedUrl;
   document.getElementById('fs-name-label').textContent = selectedName + ' — Food Fair Training';
@@ -597,9 +605,10 @@ function launchVideo() {
   // Show tap-to-play on mobile (iOS Safari blocks iframe autoplay)
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const tapOverlay = document.getElementById('tap-to-play');
+  document.getElementById('tap-to-play-label').textContent = T[selectedLang].tapPlay;
   tapOverlay.style.display = isMobile ? 'flex' : 'none';
 
-  // Cross-browser fullscreen — works on Chrome, Firefox, Safari, iOS, Android
+  // Cross-browser fullscreen
   const el = document.documentElement;
   if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
   else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
@@ -611,6 +620,10 @@ function launchVideo() {
     scheduleCheckpoint();
     document.getElementById('watch-btn').classList.add('launched');
   }
+
+  // Tick every second to track position
+  clearInterval(videoTickInterval);
+  videoTickInterval = setInterval(() => { videoStartSeconds++; }, 1000);
 
   document.addEventListener('keydown', trapKeys, true);
 }
@@ -645,9 +658,10 @@ function scheduleCheckpoint() {
 
 function triggerCheckpoint() {
   const t = T[selectedLang];
-  // Pause video by removing src temporarily
+  // Stop the position tracker
+  clearInterval(videoTickInterval);
+  // Pause video by removing src
   const iframe = document.getElementById('video-iframe');
-  iframe.dataset.pausedSrc = iframe.src;
   iframe.src = '';
 
   // Exit fullscreen so checkpoint popup is visible
@@ -684,13 +698,16 @@ async function continueWatching() {
   }
 
   if (checkpointsDone < TOTAL_CHECKPOINTS) {
-    // Resume video — restore src
-    const iframe = document.getElementById('video-iframe');
-    if (iframe.dataset.pausedSrc) {
-      iframe.src = iframe.dataset.pausedSrc;
-      iframe.dataset.pausedSrc = '';
-    }
+    // Resume video from exact position using start= parameter
+    const url = VIDEOS[selectedLang];
+    const videoId = new URL(url).searchParams.get('v');
+    const embedUrl = 'https://www.youtube-nocookie.com/embed/' + videoId
+      + '?autoplay=1&rel=0&modestbranding=1&controls=1&playsinline=1&disablekb=1&start=' + videoStartSeconds;
+    document.getElementById('video-iframe').src = embedUrl;
     document.getElementById('tap-to-play').style.display = 'none';
+    // Restart position tracker
+    clearInterval(videoTickInterval);
+    videoTickInterval = setInterval(() => { videoStartSeconds++; }, 1000);
     // Re-enter fullscreen
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
@@ -723,8 +740,9 @@ function updateCheckpointUI() {
 
 // ── Save & Exit ──
 async function saveAndExit() {
+  clearInterval(videoTickInterval);
   const emp = employees.find(e => e.name === selectedName);
-  if (emp) await fbPatch('/employees/' + emp.id, { checkpoints: checkpointsDone });
+  if (emp) await fbPatch('/employees/' + emp.id, { checkpoints: checkpointsDone, videoPosition: videoStartSeconds });
   clearTimeout(cpTimer);
   alert(T[selectedLang].savedMsg);
   resetAll();
@@ -767,6 +785,7 @@ function exitFS() {
 }
 
 function closeVideoOverlay() {
+  clearInterval(videoTickInterval);
   const overlay = document.getElementById('video-fs-overlay');
   overlay.classList.remove('active');
   document.getElementById('video-iframe').src = '';
@@ -783,7 +802,7 @@ function showScreen(id) {
 function resetAll() {
   clearTimeout(cpTimer);
   closeVideoOverlay();
-  selectedName=''; generatedCode=''; checkpointsDone=0; videoStarted=false;
+  selectedName=''; generatedCode=''; checkpointsDone=0; videoStarted=false; videoStartSeconds=0;
   document.getElementById('name-input').value='';
   document.getElementById('hdr-badge').style.display='none';
   document.getElementById('notice-waiting').style.display='flex';
