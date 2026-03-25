@@ -247,7 +247,68 @@ select option{background:white;}
         </div>
       </div>
 
+    </div><!-- end page-grid -->
+
+    <!-- REPORT & EXPORT PANEL -->
+    <div class="panel" style="max-width:1200px;margin:20px auto 0;">
+      <div class="panel-head">
+        <h3>📊 Training Report & Export</h3>
+        <span class="count-badge" id="report-count-badge">0 records</span>
+      </div>
+      <div class="panel-body">
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:18px;">
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">From Date</label>
+            <input type="date" id="report-from" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;">
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">To Date</label>
+            <input type="date" id="report-to" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;">
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Status</label>
+            <select id="report-status" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;">
+              <option value="all">All Employees</option>
+              <option value="completed">Completed Only</option>
+              <option value="pending">Not Completed</option>
+            </select>
+          </div>
+          <button class="btn btn-green" onclick="generateReport()" style="padding:10px 22px;">🔍 Generate Report</button>
+          <button class="btn btn-ghost" onclick="clearReportFilter()" style="padding:10px 18px;">Clear</button>
+        </div>
+
+        <div id="report-summary" style="display:none;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+          <div style="background:var(--green-light);border:1px solid var(--green-mid);border-radius:8px;padding:8px 16px;font-size:13px;color:var(--green-dark);">✅ Completed: <strong id="report-done-count">0</strong></div>
+          <div style="background:#fff8ec;border:1px solid #f0d08a;border-radius:8px;padding:8px 16px;font-size:13px;color:#8a5e00;">⏳ Not Completed: <strong id="report-pending-count">0</strong></div>
+          <div style="background:#f0f6fd;border:1px solid var(--border2);border-radius:8px;padding:8px 16px;font-size:13px;color:var(--muted2);">👥 Total: <strong id="report-total-count">0</strong></div>
+        </div>
+
+        <div id="report-table-wrap" style="display:none;overflow-x:auto;margin-bottom:16px;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="background:var(--green-light);">
+                <th style="padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);color:var(--green-dark);font-weight:600;">#</th>
+                <th style="padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);color:var(--green-dark);font-weight:600;">Employee Name</th>
+                <th style="padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);color:var(--green-dark);font-weight:600;">Status</th>
+                <th style="padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);color:var(--green-dark);font-weight:600;">Checkpoints</th>
+                <th style="padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);color:var(--green-dark);font-weight:600;">Date Completed</th>
+              </tr>
+            </thead>
+            <tbody id="report-tbody"></tbody>
+          </table>
+        </div>
+
+        <div id="report-export-row" style="display:none;">
+          <button class="btn btn-green" onclick="exportToExcel()" style="padding:11px 24px;font-size:14px;">📥 Export to Excel</button>
+        </div>
+
+        <div id="report-empty" style="display:none;text-align:center;padding:28px;color:var(--muted);font-size:13px;">No records found for the selected filters.</div>
+        <div id="report-placeholder" style="text-align:center;padding:28px;color:var(--muted);font-size:13px;">Select a date range and status above, then click Generate Report.</div>
+
+      </div>
     </div>
+
   </div>
 </div>
 
@@ -260,7 +321,7 @@ select option{background:white;}
 // FIREBASE CONFIG — must match employee.html
 // ══════════════════════════════════════════════════
 const FB_URL = 'https://foodfair-meat-default-rtdb.firebaseio.com';
-const ADMIN_PASSWORD = 'FoodFair2024'; // Change this to your password
+const ADMIN_PASSWORD = 'FoodFair175';
 
 const TOTAL_CHECKPOINTS = 4;
 let employees = {};
@@ -594,6 +655,140 @@ function showToast(msg, type = '') {
   t.textContent = msg;
   t.className = 'toast show ' + type;
   setTimeout(() => t.className = 'toast ' + type, 3000);
+}
+
+// ── Report & Export ──
+let reportData = [];
+
+function generateReport() {
+  const fromVal = document.getElementById('report-from').value;
+  const toVal = document.getElementById('report-to').value;
+  const status = document.getElementById('report-status').value;
+
+  const fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+  const toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
+
+  let list = Object.entries(employees).map(([id, emp]) => ({id, ...emp}));
+
+  // Filter by status
+  if (status === 'completed') list = list.filter(e => e.completed);
+  if (status === 'pending') list = list.filter(e => !e.completed);
+
+  // Filter by date range (applies to completedAt for completed, all for pending)
+  if (fromDate || toDate) {
+    list = list.filter(e => {
+      if (e.completed && e.completedAt) {
+        const d = new Date(e.completedAt);
+        if (fromDate && d < fromDate) return false;
+        if (toDate && d > toDate) return false;
+        return true;
+      }
+      // For pending employees with no date, include them only if no date filter or status=pending
+      return status === 'pending' || status === 'all';
+    });
+  }
+
+  list.sort((a,b) => a.name.localeCompare(b.name));
+  reportData = list;
+
+  const done = list.filter(e => e.completed).length;
+  const pending = list.filter(e => !e.completed).length;
+
+  document.getElementById('report-count-badge').textContent = list.length + ' records';
+  document.getElementById('report-done-count').textContent = done;
+  document.getElementById('report-pending-count').textContent = pending;
+  document.getElementById('report-total-count').textContent = list.length;
+
+  document.getElementById('report-summary').style.display = 'flex';
+  document.getElementById('report-placeholder').style.display = 'none';
+
+  if (!list.length) {
+    document.getElementById('report-table-wrap').style.display = 'none';
+    document.getElementById('report-export-row').style.display = 'none';
+    document.getElementById('report-empty').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('report-empty').style.display = 'none';
+  document.getElementById('report-table-wrap').style.display = 'block';
+  document.getElementById('report-export-row').style.display = 'block';
+
+  const tbody = document.getElementById('report-tbody');
+  tbody.innerHTML = list.map((emp, i) => {
+    const completedDate = emp.completedAt ? new Date(emp.completedAt).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) : '—';
+    const statusBadge = emp.completed
+      ? '<span style="background:#e8f5ee;color:#1a7a3c;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;">✓ Completed</span>'
+      : '<span style="background:#fff8ec;color:#8a5e00;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;">⏳ Pending</span>';
+    const rowBg = i % 2 === 0 ? 'white' : '#f8fafc';
+    return `<tr style="background:${rowBg};">
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--muted);">${i+1}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:500;">${emp.name}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);">${statusBadge}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);">${emp.checkpoints||0} / ${TOTAL_CHECKPOINTS}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--muted);">${completedDate}</td>
+    </tr>`;
+  }).join('');
+}
+
+function clearReportFilter() {
+  document.getElementById('report-from').value = '';
+  document.getElementById('report-to').value = '';
+  document.getElementById('report-status').value = 'all';
+  document.getElementById('report-summary').style.display = 'none';
+  document.getElementById('report-table-wrap').style.display = 'none';
+  document.getElementById('report-export-row').style.display = 'none';
+  document.getElementById('report-empty').style.display = 'none';
+  document.getElementById('report-placeholder').style.display = 'block';
+  document.getElementById('report-count-badge').textContent = '0 records';
+  reportData = [];
+}
+
+function exportToExcel() {
+  if (!reportData.length) return;
+
+  const fromVal = document.getElementById('report-from').value;
+  const toVal = document.getElementById('report-to').value;
+  const dateRange = fromVal && toVal ? `${fromVal} to ${toVal}` : fromVal ? `From ${fromVal}` : toVal ? `To ${toVal}` : 'All Dates';
+
+  const rows = [
+    ['Food Fair Meat Department — Training Completion Report'],
+    [`Date Range: ${dateRange}`],
+    [`Generated: ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}`],
+    [],
+    ['#', 'Employee Name', 'Status', 'Checkpoints Completed', 'Date Completed']
+  ];
+
+  reportData.forEach((emp, i) => {
+    const completedDate = emp.completedAt ? new Date(emp.completedAt).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) : '';
+    rows.push([
+      i + 1,
+      emp.name,
+      emp.completed ? 'Completed' : 'Not Completed',
+      `${emp.checkpoints||0} / ${TOTAL_CHECKPOINTS}`,
+      completedDate
+    ]);
+  });
+
+  // Summary rows
+  const done = reportData.filter(e => e.completed).length;
+  const pending = reportData.filter(e => !e.completed).length;
+  rows.push([]);
+  rows.push(['', 'SUMMARY', '', '', '']);
+  rows.push(['', 'Total Employees', reportData.length, '', '']);
+  rows.push(['', 'Completed', done, '', '']);
+  rows.push(['', 'Not Completed', pending, '', '']);
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+
+  // Column widths
+  ws['!cols'] = [{wch:5},{wch:30},{wch:18},{wch:22},{wch:20}];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Training Report');
+
+  const filename = `FoodFair_Training_Report_${new Date().toISOString().slice(0,10)}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  showToast('✓ Excel report downloaded!', 'success');
 }
 
 // ── Init ──
