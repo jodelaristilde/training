@@ -15,7 +15,8 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
 
-header{width:100%;background:var(--green);border-bottom:1px solid var(--green-dark);padding:0 28px;display:flex;align-items:center;height:56px;gap:14px;}
+header{width:100%;background:var(--green);border-bottom:1px solid var(--green-dark);padding:0 28px;display:flex;align-items:center;height:56px;gap:14px;position:relative;}
+.hdr-center{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;}
 .hdr-logo{background:white;color:var(--green);font-family:'Bebas Neue',sans-serif;font-size:20px;padding:3px 10px;border-radius:3px;letter-spacing:1px;}
 header h1{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:3px;color:rgba(255,255,255,.9);}
 .hdr-tag{background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.3);color:white;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:3px 12px;border-radius:100px;}
@@ -134,9 +135,11 @@ select option{background:white;}
 <!-- ADMIN APP -->
 <div id="admin-app">
   <header>
-    <div class="hdr-logo">FF</div>
-    <h1>Training Management</h1>
-    <span class="hdr-tag">Admin</span>
+    <div class="hdr-center">
+      <div class="hdr-logo">FF</div>
+      <h1>Training Management</h1>
+      <span class="hdr-tag">Admin</span>
+    </div>
     <div class="hdr-right">
       <a href="index.html" style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6);text-decoration:none;padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.25);">← Employee Page</a>
       <button class="logout-btn" onclick="adminLogout()">Log Out</button>
@@ -676,9 +679,9 @@ function printCertificate(name, completedAt) {
     .cert-training{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;color:#042C53;background:#E6F1FB;padding:8px 22px;border-radius:8px;display:inline-block;margin-bottom:18px;}
     .cert-footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid #ddd;}
     .cert-sig{text-align:center;}
-    .cert-sig-line{width:150px;border-bottom:2px solid #185FA5;margin:0 auto 7px;}
-    .cert-sig-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#888;}
-    .cert-date{font-size:11px;color:#888;}
+    .cert-sig-line{width:220px;border-bottom:3px solid #185FA5;margin:0 auto 7px;}
+    .cert-sig-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#888;}
+    .cert-date{font-size:14px;color:#555;font-weight:600;}
     .cert-seal{width:58px;height:58px;border-radius:50%;border:4px solid #185FA5;display:flex;align-items:center;justify-content:center;flex-direction:column;margin:0 auto;}
     .cert-seal-text{font-family:'Bebas Neue',sans-serif;font-size:8px;letter-spacing:1px;color:#185FA5;text-align:center;line-height:1.3;}
     @media print{html,body{height:100%;overflow:hidden;}body{display:flex;align-items:center;justify-content:center;}}
@@ -700,7 +703,7 @@ function printCertificate(name, completedAt) {
       </div>
       <div class="cert-sig">
         <div class="cert-date">Completed: ${dateStr}</div>
-        <div class="cert-sig-line" style="margin-top:18px;"></div>
+        <div class="cert-sig-line" style="margin-top:6px;"></div>
         <div class="cert-sig-label">Date</div>
       </div>
     </div>
