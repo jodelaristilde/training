@@ -206,6 +206,11 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(24,95,165,.1);}
       </div>
       <div id="tap-to-play-label" style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:white;">TAP TO PLAY</div>
     </div>
+    <!-- Resume banner for non-YouTube videos (e.g. Spanish) -->
+    <div id="resume-banner" style="display:none;position:absolute;bottom:0;left:0;right:0;z-index:11;background:rgba(12,68,124,0.93);padding:14px 20px;align-items:center;gap:12px;border-top:2px solid #f0c040;">
+      <span style="font-size:22px;">⏩</span>
+      <span id="resume-banner-text" style="font-family:'DM Sans',sans-serif;font-size:14px;color:white;line-height:1.5;"></span>
+    </div>
   </div>
 </div>
 
@@ -327,7 +332,7 @@ const FB_URL = 'https://foodfair-meat-default-rtdb.firebaseio.com';
 // ── Video URLs per language — Official NYS DOL videos ──
 const VIDEOS = {
   en: 'https://www.youtube.com/watch?v=A9gudpiQ40M',  // English
-  es: 'https://www.youtube.com/watch?v=VH3T4agU8XE',  // Spanish — ESTADO DE NEW YORK
+  es: 'https://www.nyc.gov/assets/cchr/training/spanish/index.html',  // Spanish — NYC CCHR
   ht: 'https://www.youtube.com/watch?v=InkQgXNkITI'   // Haitian Creole — ETA NOUYÒK
 };
 
@@ -375,7 +380,7 @@ const T = {
     needFullName:'Por favor ingrese su nombre Y apellido (ej. Maria Gonzalez).',
     alreadyDoneTitle:'CAPACITACIÓN YA COMPLETADA',
     alreadyDoneMsg:'ya completó esta capacitación. No se requiere ninguna acción adicional.',
-    beginBtn:'COMENZAR CAPACITACIÓN →', tapPlay:'TOCA PARA REPRODUCIR'
+    beginBtn:'COMENZAR CAPACITACIÓN →', tapPlay:'TOCA PARA REPRODUCIR', resumeBanner:'El video se reinició desde el principio. Por favor avance manualmente hasta donde lo dejó (aproximadamente {min} minutos).'
   },
   ht: {
     s1Title:'Koneksyon Anplwaye', s1Sub:'Ekri non konplè ou jan manadjè ou ba ou li a. Non ou dwe nan lis anplwaye yo.',
@@ -592,8 +597,11 @@ function launchVideo() {
   const videoId = new URL(url).searchParams.get('v');
   // start= resumes from saved position, disableseek not possible via embed but we lock controls
   const startAt = videoStartSeconds || (checkpointsDone * 10 * 60);
-  const embedUrl = 'https://www.youtube-nocookie.com/embed/' + videoId
-    + '?autoplay=1&rel=0&modestbranding=1&controls=1&playsinline=1&disablekb=1&start=' + startAt;
+  // If it's a YouTube URL, build embed URL; otherwise use the URL directly
+  const embedUrl = videoId
+    ? 'https://www.youtube-nocookie.com/embed/' + videoId
+      + '?autoplay=1&rel=0&modestbranding=1&controls=1&playsinline=1&disablekb=1&start=' + startAt
+    : url;
 
   document.getElementById('video-iframe').src = embedUrl;
   document.getElementById('fs-name-label').textContent = selectedName + ' — Food Fair Training';
@@ -614,6 +622,20 @@ function launchVideo() {
   else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
   else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
   else if (el.msRequestFullscreen) el.msRequestFullscreen();
+
+  // Show resume banner for non-YouTube videos when returning mid-training
+  const resumeBanner = document.getElementById('resume-banner');
+  const resumeText = document.getElementById('resume-banner-text');
+  const isYoutube = !!new URL(VIDEOS[selectedLang]).searchParams.get('v');
+  if (!isYoutube && videoStartSeconds > 0) {
+    const mins = Math.floor(videoStartSeconds / 60);
+    const msg = (T[selectedLang].resumeBanner || 'The video restarted from the beginning. Please manually seek to where you left off (approximately {min} minutes in).').replace('{min}', mins);
+    resumeText.textContent = msg;
+    resumeBanner.style.display = 'flex';
+    setTimeout(() => { resumeBanner.style.display = 'none'; }, 20000);
+  } else {
+    resumeBanner.style.display = 'none';
+  }
 
   if (!videoStarted) {
     videoStarted = true;
@@ -701,10 +723,23 @@ async function continueWatching() {
     // Resume video from exact position using start= parameter
     const url = VIDEOS[selectedLang];
     const videoId = new URL(url).searchParams.get('v');
-    const embedUrl = 'https://www.youtube-nocookie.com/embed/' + videoId
-      + '?autoplay=1&rel=0&modestbranding=1&controls=1&playsinline=1&disablekb=1&start=' + videoStartSeconds;
+    const embedUrl = videoId
+      ? 'https://www.youtube-nocookie.com/embed/' + videoId
+        + '?autoplay=1&rel=0&modestbranding=1&controls=1&playsinline=1&disablekb=1&start=' + videoStartSeconds
+      : url;
     document.getElementById('video-iframe').src = embedUrl;
     document.getElementById('tap-to-play').style.display = 'none';
+    // Show resume banner for non-YouTube videos after checkpoint reload
+    const _banner = document.getElementById('resume-banner');
+    const _bannerText = document.getElementById('resume-banner-text');
+    const _isYt = !!new URL(VIDEOS[selectedLang]).searchParams.get('v');
+    if (!_isYt) {
+      const _mins = Math.floor(videoStartSeconds / 60);
+      const _msg = (T[selectedLang].resumeBanner || 'The video restarted from the beginning. Please manually seek to where you left off (approximately {min} minutes in).').replace('{min}', _mins);
+      _bannerText.textContent = _msg;
+      _banner.style.display = 'flex';
+      setTimeout(() => { _banner.style.display = 'none'; }, 20000);
+    }
     // Restart position tracker
     clearInterval(videoTickInterval);
     videoTickInterval = setInterval(() => { videoStartSeconds++; }, 1000);
